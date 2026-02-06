@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.log
+uploads/
+dist/
+.DS_Store
+image.png
+nul
+web-app-dist.zip

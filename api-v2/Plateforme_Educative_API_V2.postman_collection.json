@@ -1,0 +1,344 @@
+{
+	"info": {
+		"_postman_id": "plateforme-educative-api-v2-runner",
+		"name": "Plateforme Educative API V2 - Runner",
+		"description": "Collection optimisée pour exécution complète avec Runner",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:3001", "type": "string"},
+		{"key": "tokenParent", "value": "", "type": "string"},
+		{"key": "tokenAdmin", "value": "", "type": "string"},
+		{"key": "tokenEnfant", "value": "", "type": "string"},
+		{"key": "refreshTokenParent", "value": "", "type": "string"},
+		{"key": "userId", "value": "", "type": "string"},
+		{"key": "enfantId", "value": "", "type": "string"},
+		{"key": "codeConnexionEnfant", "value": "", "type": "string"},
+		{"key": "pinEnfant", "value": "", "type": "string"},
+		{"key": "abonnementId", "value": "", "type": "string"},
+		{"key": "contenuId", "value": "1", "type": "string"},
+		{"key": "domaineId", "value": "1", "type": "string"},
+		{"key": "notificationId", "value": "", "type": "string"}
+	],
+	"item": [
+		{
+			"name": "01 - Health Check",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('API is running', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.status).to.eql('OK');", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {"raw": "{{baseUrl}}/api/health", "host": ["{{baseUrl}}"], "path": ["api", "health"]}
+			}
+		},
+		{
+			"name": "02 - Connexion Admin",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Admin login successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data && jsonData.data.accessToken) {", "        pm.collectionVariables.set('tokenAdmin', jsonData.data.accessToken);", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"identifiant\": \"admin@plateforme-educative.bf\",\n    \"motDePasse\": \"Admin2024!\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"]}
+			}
+		},
+		{
+			"name": "03 - Inscription Parent",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Parent registration successful', function() {", "    pm.response.to.have.status(201);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data && jsonData.data.accessToken) {", "        pm.collectionVariables.set('tokenParent', jsonData.data.accessToken);", "    }", "    if (jsonData.data && jsonData.data.refreshToken) {", "        pm.collectionVariables.set('refreshTokenParent', jsonData.data.refreshToken);", "    }", "    if (jsonData.data && jsonData.data.utilisateur) {", "        pm.collectionVariables.set('userId', jsonData.data.utilisateur.id);", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"nom\": \"Ouedraogo\",\n    \"prenom\": \"Jean\",\n    \"telephone\": \"+22670123456\",\n    \"email\": \"jean.parent@test.com\",\n    \"motDePasse\": \"Password123!\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+			}
+		},
+		{
+			"name": "04 - Profil Parent (me)",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get profile successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"]}
+			}
+		},
+		{
+			"name": "05 - Creer Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Child created successfully', function() {", "    pm.response.to.have.status(201);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data) {", "        pm.collectionVariables.set('enfantId', jsonData.data.id);", "        pm.collectionVariables.set('codeConnexionEnfant', jsonData.data.codeConnexion);", "        if (jsonData.data.identifiants) {", "            pm.collectionVariables.set('pinEnfant', jsonData.data.identifiants.pin);", "        }", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"nomPseudo\": \"Petit Jean\",\n    \"age\": 8,\n    \"modeConnexion\": \"pin\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/enfants", "host": ["{{baseUrl}}"], "path": ["api", "enfants"]}
+			}
+		},
+		{
+			"name": "06 - Liste Enfants (Parent)",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('List children successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/enfants", "host": ["{{baseUrl}}"], "path": ["api", "enfants"]}
+			}
+		},
+		{
+			"name": "07 - Detail Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get child details successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}"]}
+			}
+		},
+		{
+			"name": "08 - Modifier Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Update child successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "PUT",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"nomPseudo\": \"Petit Jean (modifie)\",\n    \"age\": 9\n}"},
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}"]}
+			}
+		},
+		{
+			"name": "09 - Identifiants Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get child credentials successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}/identifiants", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}", "identifiants"]}
+			}
+		},
+		{
+			"name": "10 - Configurer PIN Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Configure PIN successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    pm.collectionVariables.set('pinEnfant', '1234');", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "PUT",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"pin\": \"1234\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}/pin", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}", "pin"]}
+			}
+		},
+		{
+			"name": "11 - Connexion Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Child login successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data && jsonData.data.accessToken) {", "        pm.collectionVariables.set('tokenEnfant', jsonData.data.accessToken);", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"codeConnexion\": \"{{codeConnexionEnfant}}\",\n    \"pin\": \"1234\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/auth/login-enfant", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login-enfant"]}
+			}
+		},
+		{
+			"name": "12 - Progression Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get progression successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}/progression", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}", "progression"]}
+			}
+		},
+		{
+			"name": "13 - Badges Enfant",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get badges successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/enfants/{{enfantId}}/badges", "host": ["{{baseUrl}}"], "path": ["api", "enfants", "{{enfantId}}", "badges"]}
+			}
+		},
+		{
+			"name": "14 - Types Abonnements (Public)",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get subscription types successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {"raw": "{{baseUrl}}/api/abonnements/types", "host": ["{{baseUrl}}"], "path": ["api", "abonnements", "types"]}
+			}
+		},
+		{
+			"name": "15 - Souscrire Abonnement",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Subscribe successful', function() {", "    pm.response.to.have.status(201);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data && jsonData.data.id) {", "        pm.collectionVariables.set('abonnementId', jsonData.data.id);", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"enfantId\": {{enfantId}},\n    \"typeAbonnementId\": 1\n}"},
+				"url": {"raw": "{{baseUrl}}/api/abonnements", "host": ["{{baseUrl}}"], "path": ["api", "abonnements"]}
+			}
+		},
+		{
+			"name": "16 - Mes Abonnements",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get subscriptions successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/abonnements", "host": ["{{baseUrl}}"], "path": ["api", "abonnements"]}
+			}
+		},
+		{
+			"name": "17 - Detail Abonnement",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get subscription detail successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/abonnements/{{abonnementId}}", "host": ["{{baseUrl}}"], "path": ["api", "abonnements", "{{abonnementId}}"]}
+			}
+		},
+		{
+			"name": "18 - Toggle Renouvellement Auto",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Toggle renewal successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "PUT",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"actif\": true\n}"},
+				"url": {"raw": "{{baseUrl}}/api/abonnements/{{abonnementId}}/renouvellement", "host": ["{{baseUrl}}"], "path": ["api", "abonnements", "{{abonnementId}}", "renouvellement"]}
+			}
+		},
+		{
+			"name": "19 - Domaines Educatifs (Public)",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get domains successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {"raw": "{{baseUrl}}/api/contenus/domaines", "host": ["{{baseUrl}}"], "path": ["api", "contenus", "domaines"]}
+			}
+		},
+		{
+			"name": "20 - Liste Contenus (Public)",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get contents successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {"raw": "{{baseUrl}}/api/contenus", "host": ["{{baseUrl}}"], "path": ["api", "contenus"]}
+			}
+		},
+		{
+			"name": "21 - Detail Contenu",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get content detail successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/contenus/{{contenuId}}", "host": ["{{baseUrl}}"], "path": ["api", "contenus", "{{contenuId}}"]}
+			}
+		},
+		{
+			"name": "22 - [Enfant] Demarrer Contenu",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Start content successful', function() {", "    var code = pm.response.code;", "    pm.expect(code).to.be.oneOf([200, 201]);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenEnfant}}"}],
+				"url": {"raw": "{{baseUrl}}/api/contenus/{{contenuId}}/demarrer", "host": ["{{baseUrl}}"], "path": ["api", "contenus", "{{contenuId}}", "demarrer"]}
+			}
+		},
+		{
+			"name": "23 - [Enfant] Progression Contenu",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Update progression successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenEnfant}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"progression\": 50,\n    \"tempsPasse\": 300\n}"},
+				"url": {"raw": "{{baseUrl}}/api/contenus/{{contenuId}}/progression", "host": ["{{baseUrl}}"], "path": ["api", "contenus", "{{contenuId}}", "progression"]}
+			}
+		},
+		{
+			"name": "24 - [Enfant] Terminer Contenu",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Complete content successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenEnfant}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"score\": 85\n}"},
+				"url": {"raw": "{{baseUrl}}/api/contenus/{{contenuId}}/terminer", "host": ["{{baseUrl}}"], "path": ["api", "contenus", "{{contenuId}}", "terminer"]}
+			}
+		},
+		{
+			"name": "25 - [Admin] Dashboard",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get dashboard successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "admin", "dashboard"]}
+			}
+		},
+		{
+			"name": "26 - [Admin] Stats Utilisateurs",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get user stats successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/statistiques/utilisateurs", "host": ["{{baseUrl}}"], "path": ["api", "admin", "statistiques", "utilisateurs"]}
+			}
+		},
+		{
+			"name": "27 - [Admin] Stats Abonnements",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get subscription stats successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/statistiques/abonnements", "host": ["{{baseUrl}}"], "path": ["api", "admin", "statistiques", "abonnements"]}
+			}
+		},
+		{
+			"name": "28 - [Admin] Stats Contenus",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get content stats successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/statistiques/contenus", "host": ["{{baseUrl}}"], "path": ["api", "admin", "statistiques", "contenus"]}
+			}
+		},
+		{
+			"name": "29 - [Admin] Stats Revenus",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get revenue stats successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/statistiques/revenus", "host": ["{{baseUrl}}"], "path": ["api", "admin", "statistiques", "revenus"]}
+			}
+		},
+		{
+			"name": "30 - [Admin] Roles",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Get roles successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+				"url": {"raw": "{{baseUrl}}/api/admin/roles", "host": ["{{baseUrl}}"], "path": ["api", "admin", "roles"]}
+			}
+		},
+		{
+			"name": "31 - [Admin] Creer Contenu",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Create content successful', function() {", "    pm.response.to.have.status(201);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"titre\": \"Nouveau contenu test\",\n    \"description\": \"Description du contenu test\",\n    \"type\": \"video\",\n    \"domaineId\": 1,\n    \"trancheAgeMin\": 6,\n    \"trancheAgeMax\": 10,\n    \"dureeMinutes\": 15,\n    \"pointsXp\": 20\n}"},
+				"url": {"raw": "{{baseUrl}}/api/contenus", "host": ["{{baseUrl}}"], "path": ["api", "contenus"]}
+			}
+		},
+		{
+			"name": "32 - [Admin] Creer Type Abonnement",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Create subscription type successful', function() {", "    pm.response.to.have.status(201);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"nom\": \"Test Plan\",\n    \"description\": \"Plan de test\",\n    \"prix\": 1000,\n    \"duree\": \"MENSUEL\",\n    \"duree_jours\": 30,\n    \"nombre_appareils_max\": 1,\n    \"telechargement_autorise\": false,\n    \"contenu_premium\": false\n}"},
+				"url": {"raw": "{{baseUrl}}/api/abonnements/types", "host": ["{{baseUrl}}"], "path": ["api", "abonnements", "types"]}
+			}
+		},
+		{
+			"name": "33 - Refresh Token",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Refresh token successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "    if (jsonData.data && jsonData.data.accessToken) {", "        pm.collectionVariables.set('tokenParent', jsonData.data.accessToken);", "    }", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\n    \"refreshToken\": \"{{refreshTokenParent}}\"\n}"},
+				"url": {"raw": "{{baseUrl}}/api/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh"]}
+			}
+		},
+		{
+			"name": "34 - Deconnexion Parent",
+			"event": [{"listen": "test", "script": {"exec": ["pm.test('Logout successful', function() {", "    pm.response.to.have.status(200);", "    var jsonData = pm.response.json();", "    pm.expect(jsonData.success).to.eql(true);", "});"], "type": "text/javascript"}}],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{tokenParent}}"}],
+				"url": {"raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"]}
+			}
+		}
+	]
+}

@@ -1,0 +1,7 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/c2180186c/apieducative.genius-universe.com"
+PassengerBaseURI "/"
+PassengerNodejs "/home/c2180186c/nodevenv/apieducative.genius-universe.com/20/bin/node"
+PassengerAppType node
+PassengerStartupFile src/server.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

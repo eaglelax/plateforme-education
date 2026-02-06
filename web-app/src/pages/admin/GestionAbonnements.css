@@ -1,0 +1,177 @@
+/* ===================================
+   GESTION ABONNEMENTS - Admin Theme
+   Enhanced subscription management styles
+   =================================== */
+
+/* Base styles inherited from AdminPages.css */
+
+/* Types Overview Enhanced */
+.gestion-abonnements-page .types-overview {
+    margin-bottom: 2.5rem;
+    animation: fadeInUp 0.5s ease-out 0.1s backwards;
+}
+
+.gestion-abonnements-page .types-overview h3 {
+    font-size: 1.15rem;
+    color: var(--admin-text, #1E293B);
+    margin-bottom: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gestion-abonnements-page .types-overview h3::before {
+    content: '';
+    width: 4px;
+    height: 22px;
+    background: linear-gradient(180deg, var(--admin-primary, #6366F1), var(--admin-purple, #8B5CF6));
+    border-radius: 2px;
+}
+
+.gestion-abonnements-page .types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+}
+
+.gestion-abonnements-page .type-card {
+    background: var(--admin-card, white);
+    padding: 1.75rem;
+    border-radius: var(--admin-radius-lg, 16px);
+    box-shadow: var(--admin-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.gestion-abonnements-page .type-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--admin-primary, #6366F1), var(--admin-purple, #8B5CF6));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gestion-abonnements-page .type-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gestion-abonnements-page .type-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 35px rgba(99, 102, 241, 0.15);
+    border-color: var(--admin-border, #E2E8F0);
+}
+
+.gestion-abonnements-page .type-card:hover::before {
+    opacity: 1;
+}
+
+.gestion-abonnements-page .type-card:hover::after {
+    opacity: 1;
+}
+
+.gestion-abonnements-page .type-card h4 {
+    color: var(--admin-text, #1E293B);
+    margin: 0 0 0.75rem 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.gestion-abonnements-page .type-card .price {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--admin-primary, #6366F1) 0%, var(--admin-purple, #8B5CF6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.gestion-abonnements-page .type-card .duration {
+    font-size: 0.9rem;
+    color: var(--admin-text-muted, #64748B);
+    margin: 0.5rem 0 0;
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+}
+
+/* Status Badges Enhanced */
+.gestion-abonnements-page .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.gestion-abonnements-page .status-badge.active {
+    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+    color: #15803D;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.gestion-abonnements-page .status-badge.expired {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #B45309;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.gestion-abonnements-page .status-badge.grace {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1D4ED8;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.gestion-abonnements-page .status-badge.cancelled {
+    background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+    color: var(--admin-text-muted, #64748B);
+}
+
+/* Auto Renewal Indicator */
+.gestion-abonnements-page .text-success {
+    color: var(--admin-secondary, #10B981);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.gestion-abonnements-page .text-success::before {
+    content: '✓';
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.gestion-abonnements-page .text-muted {
+    color: var(--admin-text-light, #94A3B8);
+}

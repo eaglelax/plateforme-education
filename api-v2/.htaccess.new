@@ -1,0 +1,13 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/c2180186c/public_html/apieducative"
+PassengerBaseURI "/"
+PassengerNodejs "/home/c2180186c/nodevenv/public_html/apieducative/20/bin/node"
+PassengerAppType node
+PassengerStartupFile app.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+# Force all requests to Node.js
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ / [L,QSA]

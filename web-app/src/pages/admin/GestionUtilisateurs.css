@@ -1,0 +1,143 @@
+/* ===================================
+   GESTION UTILISATEURS - Admin Theme
+   Enhanced user management page styles
+   =================================== */
+
+.gestion-utilisateurs-page {
+    /* Utilise les styles de base de AdminPages.css */
+}
+
+/* Enhanced User Cards for Table */
+.gestion-utilisateurs-page .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.gestion-utilisateurs-page .user-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--admin-primary, #6366F1) 0%, var(--admin-purple, #8B5CF6) 100%);
+    border-radius: var(--admin-radius, 12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    transition: all 0.3s ease;
+}
+
+.gestion-utilisateurs-page tr:hover .user-avatar {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Role Badges Enhanced */
+.gestion-utilisateurs-page .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: relative;
+    overflow: hidden;
+}
+
+.gestion-utilisateurs-page .role-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+.gestion-utilisateurs-page .role-badge:hover::before {
+    transform: translateX(100%);
+}
+
+.gestion-utilisateurs-page .badge-admin {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #B45309;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.gestion-utilisateurs-page .badge-parent {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1D4ED8;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.gestion-utilisateurs-page .badge-validateur {
+    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+    color: #15803D;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.gestion-utilisateurs-page .badge-gestionnaire {
+    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
+    color: #7C3AED;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+}
+
+/* Contact Info Enhanced */
+.gestion-utilisateurs-page .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.gestion-utilisateurs-page .contact-info span:first-child {
+    color: var(--admin-text, #1E293B);
+    font-weight: 500;
+}
+
+.gestion-utilisateurs-page .contact-info .phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--admin-text-muted, #64748B);
+}
+
+/* Actions Enhanced */
+.gestion-utilisateurs-page .actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.gestion-utilisateurs-page .btn-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--admin-radius, 12px);
+    border: 1px solid var(--admin-border, #E2E8F0);
+    background: var(--admin-card, white);
+    color: var(--admin-text-muted, #64748B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gestion-utilisateurs-page .btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gestion-utilisateurs-page .btn-icon:hover:first-child {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+    color: var(--admin-primary, #6366F1);
+    border-color: var(--admin-primary, #6366F1);
+}
+
+.gestion-utilisateurs-page .btn-icon:hover:last-child {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #B45309;
+    border-color: #F59E0B;
+}

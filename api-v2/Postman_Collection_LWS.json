@@ -1,0 +1,391 @@
+{
+  "info": {
+    "name": "Plateforme Educative API - LWS",
+    "description": "Collection Postman pour l'API déployée sur LWS\n\nBase URL: http://apieducative.genius-universe.com/\n\nToutes les routes utilisent le paramètre ?route=",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://apieducative.genius-universe.com"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/?route=/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifiant\": \"admin@plateforme-educative.bf\",\n  \"motDePasse\": \"Admin2024!\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/auth/login"
+          }
+        },
+        {
+          "name": "Login Parent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifiant\": \"70000002\",\n  \"motDePasse\": \"Parent2024!\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/auth/login"
+          }
+        },
+        {
+          "name": "Register Parent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Jean\",\n  \"telephone\": \"70123456\",\n  \"email\": \"jean.dupont@email.com\",\n  \"motDePasse\": \"MonMotDePasse123!\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/auth/register"
+          }
+        },
+        {
+          "name": "Profil Utilisateur",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/auth/profil"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"VOTRE_REFRESH_TOKEN\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/auth/refresh"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Utilisateurs",
+      "item": [
+        {
+          "name": "Liste Utilisateurs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/utilisateurs"
+          }
+        },
+        {
+          "name": "Détail Utilisateur",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/utilisateurs/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enfants",
+      "item": [
+        {
+          "name": "Liste Enfants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/enfants"
+          }
+        },
+        {
+          "name": "Créer Enfant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomPseudo\": \"Petit Lucas\",\n  \"age\": 8,\n  \"avatar\": \"avatar1.png\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/enfants"
+          }
+        },
+        {
+          "name": "Détail Enfant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/enfants/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contenus",
+      "item": [
+        {
+          "name": "Liste Contenus",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/contenus"
+          }
+        },
+        {
+          "name": "Contenus par Catégorie",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/contenus&categorie=EDUCATIF"
+          }
+        },
+        {
+          "name": "Détail Contenu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/contenus/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Abonnements",
+      "item": [
+        {
+          "name": "Liste Formules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/abonnements/formules"
+          }
+        },
+        {
+          "name": "Mon Abonnement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/abonnements/mon-abonnement"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appareils",
+      "item": [
+        {
+          "name": "Liste Appareils",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/appareils"
+          }
+        },
+        {
+          "name": "Enregistrer Appareil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Tablette Famille\",\n  \"type\": \"tablette\",\n  \"imei\": \"123456789012345\",\n  \"modele\": \"Samsung Tab A\",\n  \"systemeOs\": \"Android\",\n  \"versionOs\": \"12\"\n}"
+            },
+            "url": "{{baseUrl}}/?route=/api/appareils"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/admin/dashboard"
+          }
+        },
+        {
+          "name": "Liste Tous Utilisateurs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/admin/utilisateurs"
+          }
+        },
+        {
+          "name": "Liste Tous Contenus",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/?route=/api/admin/contenus"
+          }
+        }
+      ]
+    }
+  ]
+}
