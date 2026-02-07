@@ -1,0 +1,1044 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    MODELE CONCEPTUEL DE DONNEES - VERSION 2.1 AMENDEE
+    Plateforme Educative Burkina Faso
+
+    Date de creation: 2026-01-09
+    Date modification: 2026-01-09
+    Auteur: Claude AI
+    Base: ConceptualDataModel_V1.cdm + Amendements
+
+    Amendements integres:
+    1. Un parent peut inscrire plusieurs enfants (parametre parental)
+    2. Annuler le renouvellement automatique (par defaut FALSE)
+    3. Abonnement PAR ENFANT (pas par parent)
+    4. Telechargement automatique des contenus
+    5. Whitelist APK pour mode kiosque
+    6. Badges et systeme de recompenses (TDR)
+    7. Quiz/Questions/Reponses (TDR)
+    8. Journal d'audit (TDR)
+    9. NOUVEAU: Compte enfant avec code_connexion et mot_de_passe genere
+       - Chaque enfant a son propre identifiant de connexion
+       - Le parent recoit les identifiants lors de la creation
+       - Le parent peut modifier le mot de passe de l'enfant
+       - Connexion tablette enfant avec code_connexion + mot_de_passe
+-->
+
+<ConceptualDataModel name="ConceptualDataModel_V2_Amende" version="2.1">
+
+    <Metadata>
+        <Project>Plateforme Educative Burkina Faso</Project>
+        <Version>2.1</Version>
+        <CreationDate>2026-01-09</CreationDate>
+        <LastModified>2026-01-09</LastModified>
+        <Author>Claude AI / cbazoum</Author>
+        <Description>MCD amende integrant les exigences du TDR et les amendements specifiques</Description>
+    </Metadata>
+
+    <!-- ============================================== -->
+    <!-- ENTITES PRINCIPALES                            -->
+    <!-- ============================================== -->
+
+    <Entities>
+
+        <!-- ========== UTILISATEUR (Parent/Admin) ========== -->
+        <Entity id="E01" name="Utilisateur">
+            <Description>Compte parent ou administrateur de la plateforme</Description>
+            <Attributes>
+                <Attribute name="id_utilisateur" type="INTEGER" primaryKey="true" autoIncrement="true">
+                    <Description>Identifiant unique de l'utilisateur</Description>
+                </Attribute>
+                <Attribute name="nom" type="VARCHAR(100)" mandatory="true">
+                    <Description>Nom de famille</Description>
+                </Attribute>
+                <Attribute name="prenom" type="VARCHAR(100)" mandatory="true">
+                    <Description>Prenom</Description>
+                </Attribute>
+                <Attribute name="telephone" type="VARCHAR(20)" mandatory="true" unique="true">
+                    <Description>Numero de telephone (identifiant principal)</Description>
+                </Attribute>
+                <Attribute name="email" type="VARCHAR(255)" unique="true">
+                    <Description>Adresse email (optionnel)</Description>
+                </Attribute>
+                <Attribute name="mot_de_passe" type="VARCHAR(255)" mandatory="true">
+                    <Description>Mot de passe hashe</Description>
+                </Attribute>
+                <Attribute name="code_pin" type="VARCHAR(10)" mandatory="true">
+                    <Description>Code PIN pour acces espace parent</Description>
+                </Attribute>
+                <Attribute name="statut_compte" type="ENUM('actif','inactif','suspendu','supprime')" mandatory="true" default="actif">
+                    <Description>Statut du compte</Description>
+                </Attribute>
+                <Attribute name="date_creation" type="DATETIME" mandatory="true">
+                    <Description>Date de creation du compte</Description>
+                </Attribute>
+                <Attribute name="date_derniere_connexion" type="DATETIME">
+                    <Description>Date de derniere connexion</Description>
+                </Attribute>
+                <Attribute name="langue_preferee" type="VARCHAR(10)" default="fr">
+                    <Description>Langue preferee (fr, moore, dioula)</Description>
+                </Attribute>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== ROLE ========== -->
+        <Entity id="E02" name="Role">
+            <Description>Roles utilisateurs (Parent, Admin, Gestionnaire Contenu, Validateur)</Description>
+            <Attributes>
+                <Attribute name="id_role" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="libelle" type="VARCHAR(50)" mandatory="true" unique="true">
+                    <Description>Nom du role</Description>
+                </Attribute>
+                <Attribute name="description" type="TEXT">
+                    <Description>Description du role</Description>
+                </Attribute>
+                <Attribute name="permissions" type="JSON">
+                    <Description>Liste des permissions en JSON</Description>
+                </Attribute>
+            </Attributes>
+            <DefaultData>
+                <Row libelle="parent" description="Parent/Tuteur legal"/>
+                <Row libelle="admin_plateforme" description="Administrateur de la plateforme"/>
+                <Row libelle="gestionnaire_contenu" description="Gestionnaire de contenu educatif"/>
+                <Row libelle="validateur_institutionnel" description="Validateur pedagogique"/>
+                <Row libelle="admin_technique" description="Administrateur technique"/>
+            </DefaultData>
+        </Entity>
+
+        <!-- ========== PROFIL_ENFANT (avec identifiants de connexion - Amendement #9) ========== -->
+        <Entity id="E03" name="Profil_Enfant">
+            <Description>Profil d'un enfant (4-12 ans) lie a un compte parent.
+                AMENDEMENT #9: Chaque enfant possede ses propres identifiants de connexion
+                (code_connexion + mot_de_passe) generes automatiquement lors de la creation.
+                Le parent utilise ces identifiants pour connecter la tablette de l'enfant.</Description>
+            <Attributes>
+                <Attribute name="id_enfant" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_parent" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur">
+                    <Description>Reference au compte parent</Description>
+                </Attribute>
+
+                <!-- ===== IDENTIFIANTS DE CONNEXION ENFANT (AMENDEMENT #9) ===== -->
+                <Attribute name="code_connexion" type="VARCHAR(20)" mandatory="true" unique="true">
+                    <Description>AMENDEMENT #9: Code de connexion unique genere automatiquement.
+                        Format: ENF-XXXXXX (ex: ENF-A3K7M9)
+                        Utilise par le parent pour connecter la tablette de l'enfant.</Description>
+                    <GenerationRule>Generer automatiquement: "ENF-" + 6 caracteres alphanumeriques</GenerationRule>
+                </Attribute>
+                <Attribute name="mot_de_passe" type="VARCHAR(255)" mandatory="true">
+                    <Description>AMENDEMENT #9: Mot de passe hashe, genere automatiquement lors de la creation.
+                        Le parent recoit le mot de passe en clair une seule fois (par SMS ou affichage).
+                        Le parent peut le modifier a tout moment depuis son espace.</Description>
+                    <GenerationRule>Generer automatiquement: 8 caracteres (lettres + chiffres)</GenerationRule>
+                </Attribute>
+                <Attribute name="pin_simplifie" type="VARCHAR(6)">
+                    <Description>AMENDEMENT #9: Code PIN simplifie (4-6 chiffres) pour les jeunes enfants.
+                        Alternative au mot de passe pour les 4-6 ans.
+                        Optionnel, configure par le parent.</Description>
+                </Attribute>
+                <Attribute name="mode_connexion" type="ENUM('mot_de_passe','pin','les_deux')" default="mot_de_passe">
+                    <Description>Mode de connexion autorise pour cet enfant</Description>
+                </Attribute>
+                <Attribute name="mot_de_passe_modifie" type="BOOLEAN" default="false">
+                    <Description>Indique si le parent a personnalise le mot de passe</Description>
+                </Attribute>
+                <Attribute name="date_dernier_changement_mdp" type="DATETIME">
+                    <Description>Date du dernier changement de mot de passe</Description>
+                </Attribute>
+                <!-- ===== FIN IDENTIFIANTS CONNEXION ===== -->
+
+                <Attribute name="nom_pseudo" type="VARCHAR(50)" mandatory="true">
+                    <Description>Nom ou pseudo de l'enfant</Description>
+                </Attribute>
+                <Attribute name="date_naissance" type="DATE">
+                    <Description>Date de naissance</Description>
+                </Attribute>
+                <Attribute name="age" type="INTEGER" mandatory="true">
+                    <Description>Age de l'enfant (4-12)</Description>
+                    <Constraint>age BETWEEN 4 AND 12</Constraint>
+                </Attribute>
+                <Attribute name="tranche_age" type="ENUM('4-6','7-9','10-12')" mandatory="true">
+                    <Description>Tranche d'age pour adaptation contenu</Description>
+                </Attribute>
+                <Attribute name="avatar" type="VARCHAR(255)">
+                    <Description>URL ou code de l'avatar choisi</Description>
+                </Attribute>
+                <Attribute name="niveau_scolaire" type="VARCHAR(50)">
+                    <Description>Niveau scolaire (CP, CE1, CE2, CM1, CM2)</Description>
+                </Attribute>
+                <Attribute name="points_xp" type="INTEGER" default="0">
+                    <Description>Points d'experience accumules</Description>
+                </Attribute>
+                <Attribute name="niveau_global" type="INTEGER" default="1">
+                    <Description>Niveau global de l'enfant</Description>
+                </Attribute>
+                <Attribute name="statut" type="ENUM('actif','inactif','suspendu')" default="actif">
+                    <Description>Statut du profil</Description>
+                </Attribute>
+                <Attribute name="date_creation" type="DATETIME" mandatory="true"/>
+                <Attribute name="derniere_connexion" type="DATETIME">
+                    <Description>Derniere connexion sur une tablette</Description>
+                </Attribute>
+                <Attribute name="nombre_echecs_connexion" type="INTEGER" default="0">
+                    <Description>Nombre de tentatives de connexion echouees (securite)</Description>
+                </Attribute>
+                <Attribute name="compte_bloque_jusqu" type="DATETIME">
+                    <Description>Date jusqu'a laquelle le compte est bloque (apres trop d'echecs)</Description>
+                </Attribute>
+            </Attributes>
+
+            <BusinessRules>
+                <Rule id="BR_ENF_01">Le code_connexion est genere automatiquement et ne peut pas etre modifie</Rule>
+                <Rule id="BR_ENF_02">Le mot de passe est genere automatiquement mais peut etre modifie par le parent</Rule>
+                <Rule id="BR_ENF_03">Apres 5 echecs de connexion, le compte est bloque pendant 15 minutes</Rule>
+                <Rule id="BR_ENF_04">Le parent recoit les identifiants par SMS lors de la creation du profil</Rule>
+                <Rule id="BR_ENF_05">Pour les enfants 4-6 ans, le mode PIN simplifie est recommande</Rule>
+            </BusinessRules>
+
+            <Indexes>
+                <Index name="idx_enfant_code_connexion" columns="code_connexion" unique="true"/>
+                <Index name="idx_enfant_parent" columns="id_parent"/>
+            </Indexes>
+        </Entity>
+
+        <!-- ========== TYPE_ABONNEMENT (Catalogue) ========== -->
+        <Entity id="E04" name="Type_Abonnement">
+            <Description>Catalogue des formules d'abonnement disponibles</Description>
+            <Attributes>
+                <Attribute name="id_type_abonnement" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="code" type="VARCHAR(20)" mandatory="true" unique="true">
+                    <Description>Code unique (MENSUEL, ANNUEL, ESSAI)</Description>
+                </Attribute>
+                <Attribute name="libelle" type="VARCHAR(100)" mandatory="true">
+                    <Description>Nom affiche</Description>
+                </Attribute>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="prix" type="DECIMAL(10,2)" mandatory="true">
+                    <Description>Prix en FCFA</Description>
+                </Attribute>
+                <Attribute name="devise" type="VARCHAR(10)" default="XOF"/>
+                <Attribute name="duree_jours" type="INTEGER" mandatory="true">
+                    <Description>Duree en jours (30, 365, 7)</Description>
+                </Attribute>
+                <Attribute name="periode_grace_jours" type="INTEGER" default="3">
+                    <Description>Jours de grace apres expiration</Description>
+                </Attribute>
+                <Attribute name="telechargement_autorise" type="BOOLEAN" default="true">
+                    <Description>Autorise le telechargement offline</Description>
+                </Attribute>
+                <Attribute name="est_essai_gratuit" type="BOOLEAN" default="false"/>
+                <Attribute name="actif" type="BOOLEAN" default="true">
+                    <Description>Formule active a la vente</Description>
+                </Attribute>
+            </Attributes>
+            <DefaultData>
+                <Row code="MENSUEL" libelle="Abonnement Mensuel" prix="2500" duree_jours="30"/>
+                <Row code="ANNUEL" libelle="Abonnement Annuel" prix="24000" duree_jours="365"/>
+                <Row code="ESSAI" libelle="Essai Gratuit" prix="0" duree_jours="7" est_essai_gratuit="true"/>
+            </DefaultData>
+        </Entity>
+
+        <!-- ========== ABONNEMENT (PAR ENFANT - Amendement #3) ========== -->
+        <Entity id="E05" name="Abonnement">
+            <Description>Abonnement lie a UN ENFANT (et non au parent) - Amendement #3</Description>
+            <Attributes>
+                <Attribute name="id_abonnement" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant">
+                    <Description>AMENDEMENT #3: Abonnement par enfant</Description>
+                </Attribute>
+                <Attribute name="id_type_abonnement" type="INTEGER" mandatory="true" foreignKey="Type_Abonnement.id_type_abonnement"/>
+                <Attribute name="date_debut" type="DATE" mandatory="true"/>
+                <Attribute name="date_fin" type="DATE" mandatory="true"/>
+                <Attribute name="date_fin_grace" type="DATE">
+                    <Description>Date fin periode de grace</Description>
+                </Attribute>
+                <Attribute name="statut" type="ENUM('actif','expire','suspendu','annule','essai')" default="actif"/>
+                <Attribute name="renouvellement_auto" type="BOOLEAN" default="false">
+                    <Description>AMENDEMENT #2: Desactive par defaut</Description>
+                </Attribute>
+                <Attribute name="date_annulation_renouvellement" type="DATETIME">
+                    <Description>Date d'annulation du renouvellement auto</Description>
+                </Attribute>
+                <Attribute name="prix_paye" type="DECIMAL(10,2)"/>
+                <Attribute name="date_creation" type="DATETIME" mandatory="true"/>
+            </Attributes>
+            <BusinessRules>
+                <Rule id="BR01">Un enfant ne peut avoir qu'un seul abonnement actif a la fois</Rule>
+                <Rule id="BR02">Le renouvellement automatique est desactive par defaut (Amendement #2)</Rule>
+            </BusinessRules>
+        </Entity>
+
+        <!-- ========== PAIEMENT ========== -->
+        <Entity id="E06" name="Paiement">
+            <Description>Transaction de paiement Mobile Money</Description>
+            <Attributes>
+                <Attribute name="id_paiement" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_abonnement" type="INTEGER" mandatory="true" foreignKey="Abonnement.id_abonnement"/>
+                <Attribute name="id_utilisateur" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur">
+                    <Description>Parent qui effectue le paiement</Description>
+                </Attribute>
+                <Attribute name="montant" type="DECIMAL(10,2)" mandatory="true"/>
+                <Attribute name="devise" type="VARCHAR(10)" default="XOF"/>
+                <Attribute name="moyen_paiement" type="ENUM('orange_money','moov_money','wave')" mandatory="true"/>
+                <Attribute name="numero_telephone" type="VARCHAR(20)" mandatory="true">
+                    <Description>Numero utilise pour le paiement</Description>
+                </Attribute>
+                <Attribute name="reference_transaction" type="VARCHAR(100)" unique="true">
+                    <Description>Reference retournee par l'operateur</Description>
+                </Attribute>
+                <Attribute name="reference_interne" type="VARCHAR(100)" unique="true">
+                    <Description>Reference interne plateforme</Description>
+                </Attribute>
+                <Attribute name="statut" type="ENUM('en_attente','reussi','echoue','rembourse','annule')" default="en_attente"/>
+                <Attribute name="code_erreur" type="VARCHAR(50)">
+                    <Description>Code erreur si echec</Description>
+                </Attribute>
+                <Attribute name="message_erreur" type="TEXT"/>
+                <Attribute name="nombre_tentatives" type="INTEGER" default="1"/>
+                <Attribute name="date_paiement" type="DATETIME" mandatory="true"/>
+                <Attribute name="date_confirmation" type="DATETIME"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== APPAREIL ========== -->
+        <Entity id="E07" name="Appareil">
+            <Description>Appareil (tablette/telephone) enregistre</Description>
+            <Attributes>
+                <Attribute name="id_appareil" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_parent" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur"/>
+                <Attribute name="identifiant_unique" type="VARCHAR(255)" mandatory="true" unique="true">
+                    <Description>IMEI ou Android ID</Description>
+                </Attribute>
+                <Attribute name="nom_appareil" type="VARCHAR(100)">
+                    <Description>Nom donne par le parent</Description>
+                </Attribute>
+                <Attribute name="type_appareil" type="ENUM('tablette','telephone')" default="tablette"/>
+                <Attribute name="marque" type="VARCHAR(100)"/>
+                <Attribute name="modele" type="VARCHAR(100)"/>
+                <Attribute name="version_os" type="VARCHAR(50)"/>
+                <Attribute name="version_app" type="VARCHAR(20)"/>
+                <Attribute name="token_push" type="VARCHAR(255)">
+                    <Description>Token pour notifications push</Description>
+                </Attribute>
+                <Attribute name="statut" type="ENUM('actif','inactif','bloque')" default="actif"/>
+                <Attribute name="date_liaison" type="DATETIME" mandatory="true"/>
+                <Attribute name="derniere_synchronisation" type="DATETIME"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== SESSION_ACTIVE (Amendement #3 - Connexion unique) ========== -->
+        <Entity id="E08" name="Session_Active">
+            <Description>AMENDEMENT #3: Empecher 2 enfants sur le meme appareil simultanement</Description>
+            <Attributes>
+                <Attribute name="id_session" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_appareil" type="INTEGER" mandatory="true" foreignKey="Appareil.id_appareil"/>
+                <Attribute name="token_session" type="VARCHAR(255)" mandatory="true" unique="true"/>
+                <Attribute name="date_debut" type="DATETIME" mandatory="true"/>
+                <Attribute name="date_derniere_activite" type="DATETIME" mandatory="true"/>
+                <Attribute name="date_fin" type="DATETIME"/>
+                <Attribute name="est_active" type="BOOLEAN" default="true"/>
+                <Attribute name="raison_fermeture" type="ENUM('deconnexion','expiration','force','autre_session')"/>
+                <Attribute name="adresse_ip" type="VARCHAR(45)"/>
+            </Attributes>
+            <BusinessRules>
+                <Rule id="BR03">Un appareil ne peut avoir qu'une seule session active (est_active=true) a la fois</Rule>
+                <Rule id="BR04">Une nouvelle session sur un appareil ferme automatiquement la precedente</Rule>
+            </BusinessRules>
+            <UniqueConstraint columns="id_appareil" condition="est_active = true"/>
+        </Entity>
+
+        <!-- ========== PARAMETRE_PARENTAL (Amendement #1) ========== -->
+        <Entity id="E09" name="Parametre_Parental">
+            <Description>Parametres de controle parental par enfant - AMENDEMENT #1: Mode kiosque</Description>
+            <Attributes>
+                <Attribute name="id_parametrage" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" unique="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="temps_max_journalier_minutes" type="INTEGER" default="60">
+                    <Description>Temps maximum par jour en minutes</Description>
+                </Attribute>
+                <Attribute name="heure_debut_autorisee" type="TIME" default="08:00">
+                    <Description>Heure de debut autorisee</Description>
+                </Attribute>
+                <Attribute name="heure_fin_autorisee" type="TIME" default="20:00">
+                    <Description>Heure de fin autorisee</Description>
+                </Attribute>
+                <Attribute name="jours_autorises" type="VARCHAR(50)" default="lun,mar,mer,jeu,ven,sam,dim">
+                    <Description>Jours autorises separes par virgule</Description>
+                </Attribute>
+                <Attribute name="horaires_weekend" type="JSON">
+                    <Description>Horaires specifiques weekend {"debut":"09:00","fin":"18:00"}</Description>
+                </Attribute>
+                <Attribute name="mode_kiosque_actif" type="BOOLEAN" default="true">
+                    <Description>AMENDEMENT #1: Mode kiosque active</Description>
+                </Attribute>
+                <Attribute name="mode_kiosque_strict" type="BOOLEAN" default="true">
+                    <Description>Empeche completement la sortie de l'app</Description>
+                </Attribute>
+                <Attribute name="code_pin_sortie" type="VARCHAR(10)">
+                    <Description>Code PIN pour sortir du mode kiosque</Description>
+                </Attribute>
+                <Attribute name="applications_systeme_visibles" type="BOOLEAN" default="false">
+                    <Description>Afficher les apps systeme dans le kiosque</Description>
+                </Attribute>
+                <Attribute name="notifications_parent_actives" type="BOOLEAN" default="true"/>
+                <Attribute name="notification_fin_temps" type="BOOLEAN" default="true"/>
+                <Attribute name="notification_activite_journaliere" type="BOOLEAN" default="true"/>
+                <Attribute name="notification_expiration_abonnement" type="BOOLEAN" default="true"/>
+                <Attribute name="date_mise_a_jour" type="DATETIME"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== DOMAINE_EDUCATIF ========== -->
+        <Entity id="E10" name="Domaine_Educatif">
+            <Description>Domaines d'apprentissage (Histoire, Sciences, etc.)</Description>
+            <Attributes>
+                <Attribute name="id_domaine" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="code" type="VARCHAR(50)" mandatory="true" unique="true"/>
+                <Attribute name="libelle" type="VARCHAR(100)" mandatory="true"/>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="icone" type="VARCHAR(255)">
+                    <Description>URL ou code icone</Description>
+                </Attribute>
+                <Attribute name="couleur" type="VARCHAR(7)">
+                    <Description>Couleur hex (#2F80ED)</Description>
+                </Attribute>
+                <Attribute name="age_min" type="INTEGER" default="4"/>
+                <Attribute name="age_max" type="INTEGER" default="12"/>
+                <Attribute name="ordre_affichage" type="INTEGER" default="0"/>
+                <Attribute name="actif" type="BOOLEAN" default="true"/>
+            </Attributes>
+            <DefaultData>
+                <Row code="HISTOIRE_GEO" libelle="Histoire et Geographie" icone="map"/>
+                <Row code="CIVISME" libelle="Education Civique et Morale" icone="flag"/>
+                <Row code="LECTURE" libelle="Lecture et Langues" icone="book"/>
+                <Row code="SCIENCES" libelle="Sciences et Decouverte" icone="microscope"/>
+                <Row code="LOGIQUE" libelle="Logique et Raisonnement" icone="puzzle"/>
+                <Row code="ARTS" libelle="Creativite et Arts" icone="palette"/>
+                <Row code="CULTURE" libelle="Culture Generale" icone="globe"/>
+            </DefaultData>
+        </Entity>
+
+        <!-- ========== DOMAINE_AUTORISE (Autorisation par enfant) ========== -->
+        <Entity id="E11" name="Domaine_Autorise">
+            <Description>Domaines autorises pour chaque enfant (controle parental)</Description>
+            <Attributes>
+                <Attribute name="id_autorisation" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_domaine" type="INTEGER" mandatory="true" foreignKey="Domaine_Educatif.id_domaine"/>
+                <Attribute name="est_autorise" type="BOOLEAN" default="true"/>
+                <Attribute name="date_autorisation" type="DATETIME"/>
+                <Attribute name="autorise_par" type="INTEGER" foreignKey="Utilisateur.id_utilisateur"/>
+            </Attributes>
+            <UniqueConstraint columns="id_enfant,id_domaine"/>
+        </Entity>
+
+        <!-- ========== NIVEAU ========== -->
+        <Entity id="E12" name="Niveau">
+            <Description>Niveaux progressifs dans un domaine</Description>
+            <Attributes>
+                <Attribute name="id_niveau" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_domaine" type="INTEGER" mandatory="true" foreignKey="Domaine_Educatif.id_domaine"/>
+                <Attribute name="numero" type="INTEGER" mandatory="true">
+                    <Description>Numero du niveau (1, 2, 3...)</Description>
+                </Attribute>
+                <Attribute name="libelle" type="VARCHAR(100)" mandatory="true"/>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="points_requis" type="INTEGER" default="0">
+                    <Description>Points requis pour debloquer</Description>
+                </Attribute>
+                <Attribute name="age_recommande_min" type="INTEGER"/>
+                <Attribute name="age_recommande_max" type="INTEGER"/>
+                <Attribute name="ordre" type="INTEGER"/>
+                <Attribute name="actif" type="BOOLEAN" default="true"/>
+            </Attributes>
+            <UniqueConstraint columns="id_domaine,numero"/>
+        </Entity>
+
+        <!-- ========== CONTENU ========== -->
+        <Entity id="E13" name="Contenu">
+            <Description>Contenu educatif (video, quiz, jeu, audio)</Description>
+            <Attributes>
+                <Attribute name="id_contenu" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_niveau" type="INTEGER" mandatory="true" foreignKey="Niveau.id_niveau"/>
+                <Attribute name="titre" type="VARCHAR(255)" mandatory="true"/>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="type_contenu" type="ENUM('video','audio','quiz','jeu','lecture','image')" mandatory="true"/>
+                <Attribute name="format_fichier" type="VARCHAR(20)">
+                    <Description>Extension (mp4, mp3, pdf)</Description>
+                </Attribute>
+                <Attribute name="url_fichier" type="VARCHAR(500)">
+                    <Description>URL du fichier principal</Description>
+                </Attribute>
+                <Attribute name="url_miniature" type="VARCHAR(500)">
+                    <Description>URL de la vignette</Description>
+                </Attribute>
+                <Attribute name="duree_secondes" type="INTEGER">
+                    <Description>Duree en secondes (video/audio)</Description>
+                </Attribute>
+                <Attribute name="taille_mo" type="DECIMAL(10,2)">
+                    <Description>Taille en Mo</Description>
+                </Attribute>
+                <Attribute name="langue" type="VARCHAR(10)" default="fr"/>
+                <Attribute name="telechargeable" type="BOOLEAN" default="true">
+                    <Description>Peut etre telecharge offline</Description>
+                </Attribute>
+                <Attribute name="telechargement_auto" type="BOOLEAN" default="false">
+                    <Description>AMENDEMENT #4: Telechargement automatique</Description>
+                </Attribute>
+                <Attribute name="priorite_telechargement" type="INTEGER" default="0">
+                    <Description>Priorite pour telechargement auto (0=basse, 10=haute)</Description>
+                </Attribute>
+                <Attribute name="points_recompense" type="INTEGER" default="10">
+                    <Description>Points gagnes a la completion</Description>
+                </Attribute>
+                <Attribute name="ordre_affichage" type="INTEGER" default="0"/>
+                <Attribute name="statut" type="ENUM('brouillon','en_revision','publie','archive')" default="brouillon"/>
+                <Attribute name="date_publication" type="DATETIME"/>
+                <Attribute name="date_creation" type="DATETIME" mandatory="true"/>
+                <Attribute name="cree_par" type="INTEGER" foreignKey="Utilisateur.id_utilisateur"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== QUIZ (Structure pour quiz interactifs) ========== -->
+        <Entity id="E14" name="Quiz">
+            <Description>Configuration d'un quiz</Description>
+            <Attributes>
+                <Attribute name="id_quiz" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_contenu" type="INTEGER" mandatory="true" unique="true" foreignKey="Contenu.id_contenu"/>
+                <Attribute name="nombre_questions" type="INTEGER" mandatory="true"/>
+                <Attribute name="score_minimum_reussite" type="INTEGER" default="60">
+                    <Description>Score minimum en % pour reussir</Description>
+                </Attribute>
+                <Attribute name="temps_limite_minutes" type="INTEGER">
+                    <Description>Temps limite (null = illimite)</Description>
+                </Attribute>
+                <Attribute name="melanger_questions" type="BOOLEAN" default="true"/>
+                <Attribute name="melanger_reponses" type="BOOLEAN" default="true"/>
+                <Attribute name="afficher_correction" type="BOOLEAN" default="true"/>
+                <Attribute name="tentatives_max" type="INTEGER">
+                    <Description>Nombre max de tentatives (null = illimite)</Description>
+                </Attribute>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== QUESTION ========== -->
+        <Entity id="E15" name="Question">
+            <Description>Question d'un quiz</Description>
+            <Attributes>
+                <Attribute name="id_question" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_quiz" type="INTEGER" mandatory="true" foreignKey="Quiz.id_quiz"/>
+                <Attribute name="enonce" type="TEXT" mandatory="true"/>
+                <Attribute name="type_question" type="ENUM('qcm','vrai_faux','texte_libre','association')" default="qcm"/>
+                <Attribute name="url_image" type="VARCHAR(500)">
+                    <Description>Image associee a la question</Description>
+                </Attribute>
+                <Attribute name="url_audio" type="VARCHAR(500)">
+                    <Description>Audio associe (pour les petits)</Description>
+                </Attribute>
+                <Attribute name="points" type="INTEGER" default="1"/>
+                <Attribute name="explication" type="TEXT">
+                    <Description>Explication apres reponse</Description>
+                </Attribute>
+                <Attribute name="ordre" type="INTEGER"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== REPONSE ========== -->
+        <Entity id="E16" name="Reponse">
+            <Description>Reponse possible a une question</Description>
+            <Attributes>
+                <Attribute name="id_reponse" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_question" type="INTEGER" mandatory="true" foreignKey="Question.id_question"/>
+                <Attribute name="texte_reponse" type="TEXT" mandatory="true"/>
+                <Attribute name="est_correcte" type="BOOLEAN" default="false"/>
+                <Attribute name="url_image" type="VARCHAR(500)"/>
+                <Attribute name="ordre" type="INTEGER"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== VALIDATION_CONTENU ========== -->
+        <Entity id="E17" name="Validation_Contenu">
+            <Description>Validation pedagogique du contenu</Description>
+            <Attributes>
+                <Attribute name="id_validation" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_contenu" type="INTEGER" mandatory="true" foreignKey="Contenu.id_contenu"/>
+                <Attribute name="id_validateur" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur"/>
+                <Attribute name="statut" type="ENUM('en_attente','approuve','rejete','revision_demandee')" default="en_attente"/>
+                <Attribute name="commentaire" type="TEXT"/>
+                <Attribute name="date_validation" type="DATETIME" mandatory="true"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== BADGE (Systeme de recompenses - TDR) ========== -->
+        <Entity id="E18" name="Badge">
+            <Description>Badges et recompenses (TDR: feedback positif)</Description>
+            <Attributes>
+                <Attribute name="id_badge" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="code" type="VARCHAR(50)" mandatory="true" unique="true"/>
+                <Attribute name="libelle" type="VARCHAR(100)" mandatory="true"/>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="icone" type="VARCHAR(255)"/>
+                <Attribute name="couleur" type="VARCHAR(7)"/>
+                <Attribute name="points_requis" type="INTEGER">
+                    <Description>Points XP requis (si applicable)</Description>
+                </Attribute>
+                <Attribute name="condition_type" type="ENUM('points','quiz_reussi','domaine_complete','temps_utilisation','premier_contenu','autre')"/>
+                <Attribute name="condition_valeur" type="INTEGER">
+                    <Description>Valeur pour la condition (ex: 5 quiz reussis)</Description>
+                </Attribute>
+                <Attribute name="condition_domaine" type="INTEGER" foreignKey="Domaine_Educatif.id_domaine">
+                    <Description>Domaine specifique si applicable</Description>
+                </Attribute>
+                <Attribute name="secret" type="BOOLEAN" default="false">
+                    <Description>Badge cache jusqu'a obtention</Description>
+                </Attribute>
+                <Attribute name="actif" type="BOOLEAN" default="true"/>
+            </Attributes>
+            <DefaultData>
+                <Row code="PREMIER_PAS" libelle="Premier Pas" condition_type="premier_contenu"/>
+                <Row code="LECTEUR_ASSIDU" libelle="Lecteur Assidu" condition_type="quiz_reussi" condition_valeur="10"/>
+                <Row code="EXPLORATEUR" libelle="Explorateur" condition_type="domaine_complete" condition_valeur="1"/>
+                <Row code="CHAMPION_QUIZ" libelle="Champion Quiz" condition_type="quiz_reussi" condition_valeur="50"/>
+                <Row code="ETOILE_MONTANTE" libelle="Etoile Montante" condition_type="points" points_requis="500"/>
+            </DefaultData>
+        </Entity>
+
+        <!-- ========== BADGE_ENFANT (Association) ========== -->
+        <Entity id="E19" name="Badge_Enfant">
+            <Description>Badges obtenus par chaque enfant</Description>
+            <Attributes>
+                <Attribute name="id_badge_enfant" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_badge" type="INTEGER" mandatory="true" foreignKey="Badge.id_badge"/>
+                <Attribute name="date_obtention" type="DATETIME" mandatory="true"/>
+                <Attribute name="notifie" type="BOOLEAN" default="false">
+                    <Description>Notification envoyee a l'enfant</Description>
+                </Attribute>
+            </Attributes>
+            <UniqueConstraint columns="id_enfant,id_badge"/>
+        </Entity>
+
+        <!-- ========== HISTORIQUE_APPRENTISSAGE ========== -->
+        <Entity id="E20" name="Historique_Apprentissage">
+            <Description>Suivi de progression et activites</Description>
+            <Attributes>
+                <Attribute name="id_historique" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_contenu" type="INTEGER" mandatory="true" foreignKey="Contenu.id_contenu"/>
+                <Attribute name="id_session" type="INTEGER" foreignKey="Session_Active.id_session"/>
+                <Attribute name="type_activite" type="ENUM('vue','commence','complete','quiz_tente','quiz_reussi')"/>
+                <Attribute name="progression_pourcent" type="INTEGER" default="0">
+                    <Description>Progression de 0 a 100</Description>
+                </Attribute>
+                <Attribute name="score" type="INTEGER">
+                    <Description>Score obtenu (quiz)</Description>
+                </Attribute>
+                <Attribute name="score_max" type="INTEGER">
+                    <Description>Score maximum possible</Description>
+                </Attribute>
+                <Attribute name="duree_secondes" type="INTEGER">
+                    <Description>Temps passe sur le contenu</Description>
+                </Attribute>
+                <Attribute name="points_gagnes" type="INTEGER" default="0"/>
+                <Attribute name="est_complete" type="BOOLEAN" default="false"/>
+                <Attribute name="date_activite" type="DATETIME" mandatory="true"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== SESSION_UTILISATION (Temps d'ecran) ========== -->
+        <Entity id="E21" name="Session_Utilisation">
+            <Description>Suivi du temps d'utilisation pour controle parental</Description>
+            <Attributes>
+                <Attribute name="id_session_util" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_appareil" type="INTEGER" mandatory="true" foreignKey="Appareil.id_appareil"/>
+                <Attribute name="date_debut" type="DATETIME" mandatory="true"/>
+                <Attribute name="date_fin" type="DATETIME"/>
+                <Attribute name="duree_minutes" type="INTEGER"/>
+                <Attribute name="interrompu_par_limite" type="BOOLEAN" default="false">
+                    <Description>Session interrompue par limite temps</Description>
+                </Attribute>
+                <Attribute name="interrompu_par_horaire" type="BOOLEAN" default="false">
+                    <Description>Session interrompue par fin horaire autorise</Description>
+                </Attribute>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== CONTENU_TELECHARGE (Amendement #4) ========== -->
+        <Entity id="E22" name="Contenu_Telecharge">
+            <Description>AMENDEMENT #4: Gestion des contenus telecharges offline</Description>
+            <Attributes>
+                <Attribute name="id_telechargement" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_contenu" type="INTEGER" mandatory="true" foreignKey="Contenu.id_contenu"/>
+                <Attribute name="id_appareil" type="INTEGER" mandatory="true" foreignKey="Appareil.id_appareil"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="date_telechargement" type="DATETIME" mandatory="true"/>
+                <Attribute name="date_expiration" type="DATETIME">
+                    <Description>Date d'expiration du contenu offline</Description>
+                </Attribute>
+                <Attribute name="taille_mo" type="DECIMAL(10,2)"/>
+                <Attribute name="chemin_local" type="VARCHAR(500)">
+                    <Description>Chemin sur l'appareil</Description>
+                </Attribute>
+                <Attribute name="statut" type="ENUM('en_attente','en_cours','complete','erreur','supprime')" default="en_attente"/>
+                <Attribute name="telechargement_auto" type="BOOLEAN" default="false">
+                    <Description>Telecharge automatiquement</Description>
+                </Attribute>
+                <Attribute name="derniere_verification" type="DATETIME">
+                    <Description>Derniere verification abonnement</Description>
+                </Attribute>
+            </Attributes>
+            <UniqueConstraint columns="id_contenu,id_appareil,id_enfant"/>
+        </Entity>
+
+        <!-- ========== PREFERENCE_TELECHARGEMENT (Amendement #4) ========== -->
+        <Entity id="E23" name="Preference_Telechargement">
+            <Description>AMENDEMENT #4: Preferences de telechargement par enfant</Description>
+            <Attributes>
+                <Attribute name="id_preference" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" unique="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="telechargement_auto_actif" type="BOOLEAN" default="true"/>
+                <Attribute name="wifi_uniquement" type="BOOLEAN" default="true">
+                    <Description>Telecharger uniquement en WiFi</Description>
+                </Attribute>
+                <Attribute name="limite_stockage_mo" type="INTEGER" default="2000">
+                    <Description>Limite de stockage en Mo</Description>
+                </Attribute>
+                <Attribute name="domaines_prioritaires" type="JSON">
+                    <Description>Liste des domaines a telecharger en priorite</Description>
+                </Attribute>
+                <Attribute name="qualite_video" type="ENUM('basse','moyenne','haute')" default="moyenne"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== APPLICATION_AUTORISEE (Amendement #5 - Whitelist APK) ========== -->
+        <Entity id="E24" name="Application_Autorisee">
+            <Description>AMENDEMENT #5: Whitelist des applications autorisees en mode kiosque</Description>
+            <Attributes>
+                <Attribute name="id_application" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="nom_package" type="VARCHAR(255)" mandatory="true" unique="true">
+                    <Description>Nom du package Android (com.example.app)</Description>
+                </Attribute>
+                <Attribute name="nom_affichage" type="VARCHAR(100)" mandatory="true"/>
+                <Attribute name="description" type="TEXT"/>
+                <Attribute name="icone" type="VARCHAR(255)"/>
+                <Attribute name="version_min" type="VARCHAR(20)">
+                    <Description>Version minimum requise</Description>
+                </Attribute>
+                <Attribute name="signature_sha256" type="VARCHAR(64)">
+                    <Description>Signature SHA256 pour verification APK</Description>
+                </Attribute>
+                <Attribute name="categorie" type="ENUM('educatif','systeme','utilitaire')" default="educatif"/>
+                <Attribute name="est_app_systeme" type="BOOLEAN" default="false"/>
+                <Attribute name="verification_obligatoire" type="BOOLEAN" default="true">
+                    <Description>Verifier la signature APK</Description>
+                </Attribute>
+                <Attribute name="actif" type="BOOLEAN" default="true"/>
+                <Attribute name="date_ajout" type="DATETIME" mandatory="true"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== APPLICATION_ENFANT_AUTORISEE (Amendement #5) ========== -->
+        <Entity id="E25" name="Application_Enfant_Autorisee">
+            <Description>AMENDEMENT #5: Applications autorisees par le parent pour chaque enfant</Description>
+            <Attributes>
+                <Attribute name="id_autorisation_app" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_enfant" type="INTEGER" mandatory="true" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="id_application" type="INTEGER" mandatory="true" foreignKey="Application_Autorisee.id_application"/>
+                <Attribute name="autorise_par" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur"/>
+                <Attribute name="date_autorisation" type="DATETIME" mandatory="true"/>
+                <Attribute name="temps_max_journalier_minutes" type="INTEGER">
+                    <Description>Limite temps pour cette app (null = illimite)</Description>
+                </Attribute>
+            </Attributes>
+            <UniqueConstraint columns="id_enfant,id_application"/>
+        </Entity>
+
+        <!-- ========== NOTIFICATION ========== -->
+        <Entity id="E26" name="Notification">
+            <Description>Notifications envoyees aux utilisateurs</Description>
+            <Attributes>
+                <Attribute name="id_notification" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_destinataire" type="INTEGER" mandatory="true" foreignKey="Utilisateur.id_utilisateur"/>
+                <Attribute name="id_enfant_concerne" type="INTEGER" foreignKey="Profil_Enfant.id_enfant">
+                    <Description>Enfant concerne si applicable</Description>
+                </Attribute>
+                <Attribute name="type" type="ENUM('info','alerte','abonnement','activite','badge','systeme')" mandatory="true"/>
+                <Attribute name="titre" type="VARCHAR(255)" mandatory="true"/>
+                <Attribute name="message" type="TEXT" mandatory="true"/>
+                <Attribute name="donnees_json" type="JSON">
+                    <Description>Donnees supplementaires</Description>
+                </Attribute>
+                <Attribute name="lu" type="BOOLEAN" default="false"/>
+                <Attribute name="date_lecture" type="DATETIME"/>
+                <Attribute name="envoye_push" type="BOOLEAN" default="false"/>
+                <Attribute name="date_envoi" type="DATETIME" mandatory="true"/>
+            </Attributes>
+        </Entity>
+
+        <!-- ========== JOURNAL_ACTION (Audit - TDR) ========== -->
+        <Entity id="E27" name="Journal_Action">
+            <Description>Journalisation des actions sensibles (TDR: securite)</Description>
+            <Attributes>
+                <Attribute name="id_log" type="BIGINT" primaryKey="true" autoIncrement="true"/>
+                <Attribute name="id_utilisateur" type="INTEGER" foreignKey="Utilisateur.id_utilisateur"/>
+                <Attribute name="id_enfant" type="INTEGER" foreignKey="Profil_Enfant.id_enfant"/>
+                <Attribute name="action" type="VARCHAR(100)" mandatory="true">
+                    <Description>Type d'action (connexion, paiement, modification, etc.)</Description>
+                </Attribute>
+                <Attribute name="entite_concernee" type="VARCHAR(100)">
+                    <Description>Table/entite concernee</Description>
+                </Attribute>
+                <Attribute name="id_entite" type="INTEGER">
+                    <Description>ID de l'enregistrement concerne</Description>
+                </Attribute>
+                <Attribute name="donnees_avant" type="JSON">
+                    <Description>Etat avant modification</Description>
+                </Attribute>
+                <Attribute name="donnees_apres" type="JSON">
+                    <Description>Etat apres modification</Description>
+                </Attribute>
+                <Attribute name="adresse_ip" type="VARCHAR(45)"/>
+                <Attribute name="user_agent" type="VARCHAR(500)"/>
+                <Attribute name="id_appareil" type="INTEGER" foreignKey="Appareil.id_appareil"/>
+                <Attribute name="resultat" type="ENUM('succes','echec','erreur')" default="succes"/>
+                <Attribute name="message_erreur" type="TEXT"/>
+                <Attribute name="date_action" type="DATETIME" mandatory="true"/>
+            </Attributes>
+            <Indexes>
+                <Index name="idx_journal_date" columns="date_action"/>
+                <Index name="idx_journal_user" columns="id_utilisateur"/>
+                <Index name="idx_journal_action" columns="action"/>
+            </Indexes>
+        </Entity>
+
+    </Entities>
+
+    <!-- ============================================== -->
+    <!-- RELATIONS / ASSOCIATIONS                       -->
+    <!-- ============================================== -->
+
+    <Relationships>
+
+        <!-- Utilisateur - Role -->
+        <Relationship id="R01" name="Possede_Role">
+            <Source entity="Utilisateur" cardinality="N"/>
+            <Target entity="Role" cardinality="N"/>
+            <Description>Un utilisateur peut avoir plusieurs roles</Description>
+        </Relationship>
+
+        <!-- Utilisateur - Profil_Enfant -->
+        <Relationship id="R02" name="Gere_Enfants">
+            <Source entity="Utilisateur" cardinality="1"/>
+            <Target entity="Profil_Enfant" cardinality="N"/>
+            <Description>Un parent gere plusieurs enfants</Description>
+        </Relationship>
+
+        <!-- Profil_Enfant - Abonnement (AMENDEMENT #3) -->
+        <Relationship id="R03" name="Possede_Abonnement">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Abonnement" cardinality="N"/>
+            <Description>AMENDEMENT #3: Chaque enfant a son propre abonnement</Description>
+        </Relationship>
+
+        <!-- Abonnement - Type_Abonnement -->
+        <Relationship id="R04" name="Est_De_Type">
+            <Source entity="Abonnement" cardinality="N"/>
+            <Target entity="Type_Abonnement" cardinality="1"/>
+        </Relationship>
+
+        <!-- Abonnement - Paiement -->
+        <Relationship id="R05" name="Regle_Par">
+            <Source entity="Abonnement" cardinality="1"/>
+            <Target entity="Paiement" cardinality="N"/>
+        </Relationship>
+
+        <!-- Utilisateur - Appareil -->
+        <Relationship id="R06" name="Possede_Appareil">
+            <Source entity="Utilisateur" cardinality="1"/>
+            <Target entity="Appareil" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Session_Active (AMENDEMENT #3) -->
+        <Relationship id="R07" name="A_Session">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Session_Active" cardinality="N"/>
+            <Description>Sessions de connexion de l'enfant</Description>
+        </Relationship>
+
+        <!-- Appareil - Session_Active (AMENDEMENT #3) -->
+        <Relationship id="R08" name="Heberge_Session">
+            <Source entity="Appareil" cardinality="1"/>
+            <Target entity="Session_Active" cardinality="N"/>
+            <Description>Une seule session active par appareil</Description>
+            <BusinessRule>Un appareil ne peut avoir qu'une session active a la fois</BusinessRule>
+        </Relationship>
+
+        <!-- Profil_Enfant - Parametre_Parental -->
+        <Relationship id="R09" name="A_Parametres">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Parametre_Parental" cardinality="1"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Domaine_Autorise -->
+        <Relationship id="R10" name="Acces_Domaine">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Domaine_Autorise" cardinality="N"/>
+        </Relationship>
+
+        <!-- Domaine_Educatif - Domaine_Autorise -->
+        <Relationship id="R11" name="Domaine_Reference">
+            <Source entity="Domaine_Educatif" cardinality="1"/>
+            <Target entity="Domaine_Autorise" cardinality="N"/>
+        </Relationship>
+
+        <!-- Domaine_Educatif - Niveau -->
+        <Relationship id="R12" name="Contient_Niveaux">
+            <Source entity="Domaine_Educatif" cardinality="1"/>
+            <Target entity="Niveau" cardinality="N"/>
+        </Relationship>
+
+        <!-- Niveau - Contenu -->
+        <Relationship id="R13" name="Contient_Contenus">
+            <Source entity="Niveau" cardinality="1"/>
+            <Target entity="Contenu" cardinality="N"/>
+        </Relationship>
+
+        <!-- Contenu - Quiz -->
+        <Relationship id="R14" name="Est_Quiz">
+            <Source entity="Contenu" cardinality="1"/>
+            <Target entity="Quiz" cardinality="0..1"/>
+        </Relationship>
+
+        <!-- Quiz - Question -->
+        <Relationship id="R15" name="Compose_De">
+            <Source entity="Quiz" cardinality="1"/>
+            <Target entity="Question" cardinality="N"/>
+        </Relationship>
+
+        <!-- Question - Reponse -->
+        <Relationship id="R16" name="A_Reponses">
+            <Source entity="Question" cardinality="1"/>
+            <Target entity="Reponse" cardinality="N"/>
+        </Relationship>
+
+        <!-- Contenu - Validation_Contenu -->
+        <Relationship id="R17" name="Valide_Par">
+            <Source entity="Contenu" cardinality="1"/>
+            <Target entity="Validation_Contenu" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Badge_Enfant -->
+        <Relationship id="R18" name="Obtient_Badge">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Badge_Enfant" cardinality="N"/>
+        </Relationship>
+
+        <!-- Badge - Badge_Enfant -->
+        <Relationship id="R19" name="Badge_Reference">
+            <Source entity="Badge" cardinality="1"/>
+            <Target entity="Badge_Enfant" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Historique_Apprentissage -->
+        <Relationship id="R20" name="A_Historique">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Historique_Apprentissage" cardinality="N"/>
+        </Relationship>
+
+        <!-- Contenu - Historique_Apprentissage -->
+        <Relationship id="R21" name="Historique_Contenu">
+            <Source entity="Contenu" cardinality="1"/>
+            <Target entity="Historique_Apprentissage" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Session_Utilisation -->
+        <Relationship id="R22" name="Temps_Utilisation">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Session_Utilisation" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Contenu_Telecharge (AMENDEMENT #4) -->
+        <Relationship id="R23" name="Telecharge_Contenu">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Contenu_Telecharge" cardinality="N"/>
+        </Relationship>
+
+        <!-- Contenu - Contenu_Telecharge (AMENDEMENT #4) -->
+        <Relationship id="R24" name="Contenu_Offline">
+            <Source entity="Contenu" cardinality="1"/>
+            <Target entity="Contenu_Telecharge" cardinality="N"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Preference_Telechargement (AMENDEMENT #4) -->
+        <Relationship id="R25" name="Preference_Download">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Preference_Telechargement" cardinality="1"/>
+        </Relationship>
+
+        <!-- Profil_Enfant - Application_Enfant_Autorisee (AMENDEMENT #5) -->
+        <Relationship id="R26" name="Apps_Autorisees">
+            <Source entity="Profil_Enfant" cardinality="1"/>
+            <Target entity="Application_Enfant_Autorisee" cardinality="N"/>
+        </Relationship>
+
+        <!-- Application_Autorisee - Application_Enfant_Autorisee (AMENDEMENT #5) -->
+        <Relationship id="R27" name="App_Reference">
+            <Source entity="Application_Autorisee" cardinality="1"/>
+            <Target entity="Application_Enfant_Autorisee" cardinality="N"/>
+        </Relationship>
+
+        <!-- Utilisateur - Notification -->
+        <Relationship id="R28" name="Recoit_Notification">
+            <Source entity="Utilisateur" cardinality="1"/>
+            <Target entity="Notification" cardinality="N"/>
+        </Relationship>
+
+        <!-- Utilisateur - Journal_Action -->
+        <Relationship id="R29" name="Effectue_Action">
+            <Source entity="Utilisateur" cardinality="1"/>
+            <Target entity="Journal_Action" cardinality="N"/>
+        </Relationship>
+
+    </Relationships>
+
+    <!-- ============================================== -->
+    <!-- REGLES METIER                                  -->
+    <!-- ============================================== -->
+
+    <BusinessRules>
+        <Rule id="BR01" priority="HAUTE">
+            <Name>Abonnement par enfant</Name>
+            <Description>AMENDEMENT #3: Chaque enfant doit avoir son propre abonnement actif pour acceder au contenu</Description>
+        </Rule>
+        <Rule id="BR02" priority="HAUTE">
+            <Name>Session unique par appareil</Name>
+            <Description>AMENDEMENT #3: Un appareil ne peut avoir qu'une seule session enfant active a la fois</Description>
+        </Rule>
+        <Rule id="BR03" priority="MOYENNE">
+            <Name>Renouvellement desactive</Name>
+            <Description>AMENDEMENT #2: Le renouvellement automatique est desactive par defaut</Description>
+        </Rule>
+        <Rule id="BR04" priority="MOYENNE">
+            <Name>Telechargement WiFi</Name>
+            <Description>AMENDEMENT #4: Le telechargement automatique se fait en WiFi par defaut</Description>
+        </Rule>
+        <Rule id="BR05" priority="HAUTE">
+            <Name>Whitelist APK kiosque</Name>
+            <Description>AMENDEMENT #5: Seules les applications dans la whitelist peuvent etre lancees en mode kiosque</Description>
+        </Rule>
+        <Rule id="BR06" priority="HAUTE">
+            <Name>Verification abonnement offline</Name>
+            <Description>L'acces hors ligne est conditionne par une verification periodique de l'abonnement (24-48h)</Description>
+        </Rule>
+        <Rule id="BR07" priority="MOYENNE">
+            <Name>Age enfant</Name>
+            <Description>L'age de l'enfant doit etre entre 4 et 12 ans</Description>
+        </Rule>
+        <Rule id="BR08" priority="HAUTE">
+            <Name>Controle parental obligatoire</Name>
+            <Description>Chaque profil enfant doit avoir des parametres parentaux associes</Description>
+        </Rule>
+    </BusinessRules>
+
+</ConceptualDataModel>

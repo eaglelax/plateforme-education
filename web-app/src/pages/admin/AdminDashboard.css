@@ -218,6 +218,25 @@
   background: linear-gradient(90deg, var(--dash-primary), var(--dash-purple));
 }
 
+/* Clickable stat cards */
+.admin-stat-card.clickable {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.admin-stat-card.clickable:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(99, 102, 241, 0.2);
+}
+
+.admin-stat-card.clickable:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+.admin-stat-card.clickable.highlight:hover {
+  box-shadow: 0 12px 35px rgba(245, 158, 11, 0.25);
+}
+
 .admin-stat-card.highlight {
   border: 2px solid var(--dash-accent);
   background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);

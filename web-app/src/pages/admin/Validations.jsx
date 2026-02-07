@@ -43,27 +43,53 @@ function Validations() {
   const [commentaire, setCommentaire] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [filterStatut, setFilterStatut] = useState('en_attente'); // Filtre par statut
 
+  // Charger les stats au montage
   useEffect(() => {
-    fetchData();
+    fetchStats();
   }, []);
 
-  const fetchData = async () => {
+  // Recharger les contenus quand le filtre change
+  useEffect(() => {
+    fetchContenus();
+  }, [filterStatut]);
+
+  const fetchStats = async () => {
+    try {
+      const statsRes = await validationService.getStats();
+      setStats(statsRes.data?.data || null);
+    } catch (err) {
+      console.error('Erreur chargement stats:', err);
+    }
+  };
+
+  const fetchContenus = async () => {
     setLoading(true);
     setError('');
     try {
-      const [contenusRes, statsRes] = await Promise.all([
-        validationService.getAValider(),
-        validationService.getStats()
-      ]);
+      // Construire les parametres selon le filtre
+      const params = {};
+      if (filterStatut === 'mes_validations') {
+        params.mesValidations = 'true';
+      } else if (filterStatut !== 'all') {
+        params.statut = filterStatut;
+      } else {
+        params.statut = 'all';
+      }
+
+      const contenusRes = await validationService.getAValider(params);
       setContenus(contenusRes.data?.data || []);
-      setStats(statsRes.data?.data || null);
     } catch (err) {
       setError('Erreur lors du chargement des donnees');
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchData = async () => {
+    await Promise.all([fetchStats(), fetchContenus()]);
   };
 
   const fetchContenuDetail = async (id) => {
@@ -189,48 +215,70 @@ function Validations() {
         </div>
       )}
 
-      {/* Statistiques */}
+      {/* Statistiques - Cartes cliquables pour filtrer */}
       {stats && (
         <div className="stats-grid">
-          <div className="stat-card pending">
+          <button
+            className={`stat-card pending clickable ${filterStatut === 'en_attente' ? 'active' : ''}`}
+            onClick={() => setFilterStatut('en_attente')}
+          >
             <FiClock className="stat-icon" />
             <div className="stat-info">
               <span className="stat-value">{stats.enAttente}</span>
               <span className="stat-label">En attente</span>
             </div>
-          </div>
-          <div className="stat-card success">
+          </button>
+          <button
+            className={`stat-card success clickable ${filterStatut === 'valide' ? 'active' : ''}`}
+            onClick={() => setFilterStatut('valide')}
+          >
             <FiCheckCircle className="stat-icon" />
             <div className="stat-info">
               <span className="stat-value">{stats.valides}</span>
               <span className="stat-label">Valides</span>
             </div>
-          </div>
-          <div className="stat-card warning">
+          </button>
+          <button
+            className={`stat-card warning clickable ${filterStatut === 'a_amender' ? 'active' : ''}`}
+            onClick={() => setFilterStatut('a_amender')}
+          >
             <FiXCircle className="stat-icon" />
             <div className="stat-info">
               <span className="stat-value">{stats.aAmender}</span>
               <span className="stat-label">A amender</span>
             </div>
-          </div>
-          <div className="stat-card info">
+          </button>
+          <button
+            className={`stat-card info clickable ${filterStatut === 'mes_validations' ? 'active' : ''}`}
+            onClick={() => setFilterStatut('mes_validations')}
+          >
             <FiCheckCircle className="stat-icon" />
             <div className="stat-info">
               <span className="stat-value">{stats.mesValidations}</span>
               <span className="stat-label">Mes validations</span>
             </div>
-          </div>
+          </button>
         </div>
       )}
 
-      {/* Liste des contenus a valider */}
+      {/* Liste des contenus filtrés */}
       <div className="contenus-section">
-        <h2>Contenus en attente ({contenus.length})</h2>
+        <h2>
+          {filterStatut === 'en_attente' && `Contenus en attente (${contenus.length})`}
+          {filterStatut === 'valide' && `Contenus validés (${contenus.length})`}
+          {filterStatut === 'a_amender' && `Contenus à amender (${contenus.length})`}
+          {filterStatut === 'mes_validations' && `Mes validations (${contenus.length})`}
+        </h2>
 
         {contenus.length === 0 ? (
           <div className="empty-state">
             <FiCheckCircle size={48} />
-            <p>Aucun contenu en attente de validation</p>
+            <p>
+              {filterStatut === 'en_attente' && 'Aucun contenu en attente de validation'}
+              {filterStatut === 'valide' && 'Aucun contenu validé'}
+              {filterStatut === 'a_amender' && 'Aucun contenu à amender'}
+              {filterStatut === 'mes_validations' && 'Aucune validation effectuée'}
+            </p>
           </div>
         ) : (
           <div className="contenus-table">
@@ -241,6 +289,7 @@ function Validations() {
                   <th>Titre</th>
                   <th>Domaine</th>
                   <th>Createur</th>
+                  <th>Statut</th>
                   <th>Age cible</th>
                   <th>Soumis le</th>
                   <th>Actions</th>
@@ -262,6 +311,14 @@ function Validations() {
                     </td>
                     <td>{contenu.domaine_nom}</td>
                     <td>{contenu.createurNom || `${contenu.createur_prenom} ${contenu.createur_nom}`}</td>
+                    <td>
+                      <span className={`status-badge status-${contenu.statut}`}>
+                        {contenu.statut === 'en_attente' && 'En attente'}
+                        {contenu.statut === 'valide' && 'Validé'}
+                        {contenu.statut === 'a_amender' && 'À amender'}
+                        {contenu.statut === 'publie' && 'Publié'}
+                      </span>
+                    </td>
                     <td>{contenu.tranche_age_min}-{contenu.tranche_age_max} ans</td>
                     <td>{formatDate(contenu.date_soumission)}</td>
                     <td className="actions-cell">
@@ -272,20 +329,25 @@ function Validations() {
                       >
                         <FiEye />
                       </button>
-                      <button
-                        className="btn-action validate"
-                        onClick={() => openModal(contenu, 'validate')}
-                        title="Valider"
-                      >
-                        <FiCheckCircle />
-                      </button>
-                      <button
-                        className="btn-action amend"
-                        onClick={() => openModal(contenu, 'amend')}
-                        title="Renvoyer pour amendement"
-                      >
-                        <FiXCircle />
-                      </button>
+                      {/* Boutons validation uniquement pour contenus en_attente */}
+                      {contenu.statut === 'en_attente' && (
+                        <>
+                          <button
+                            className="btn-action validate"
+                            onClick={() => openModal(contenu, 'validate')}
+                            title="Valider"
+                          >
+                            <FiCheckCircle />
+                          </button>
+                          <button
+                            className="btn-action amend"
+                            onClick={() => openModal(contenu, 'amend')}
+                            title="Renvoyer pour amendement"
+                          >
+                            <FiXCircle />
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

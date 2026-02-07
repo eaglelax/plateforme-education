@@ -4,7 +4,7 @@ const router = express.Router();
 
 const contenuController = require('../controllers/contenu.controller');
 const validate = require('../middlewares/validate');
-const { authenticate, optionalAuth, adminOnly, enfantOnly, validateurOrAdmin, gestionnaireOrAdmin } = require('../middlewares/auth');
+const { authenticate, optionalAuth, adminOnly, enfantOnly, validateurOrAdmin, gestionnaireOrAdmin, adminRoles } = require('../middlewares/auth');
 
 // ============================================
 // ROUTES PUBLIQUES / OPTIONNELLEMENT AUTHENTIFIEES
@@ -23,6 +23,21 @@ router.get('/domaines', contenuController.getDomaines);
  * @access  Public (contenus limites) / Private (contenus complets)
  */
 router.get('/', optionalAuth, contenuController.getAll);
+
+// ============================================
+// ROUTES ADMIN / GESTIONNAIRE (doivent etre avant /:id)
+// ============================================
+
+/**
+ * @route   GET /api/contenus/tous
+ * @desc    Lister tous les contenus (admin: tout, gestionnaire: ses contenus)
+ * @access  Gestionnaire, Admin
+ */
+router.get('/tous',
+  authenticate,
+  adminRoles,
+  contenuController.getAllAdmin
+);
 
 // ============================================
 // ROUTES VALIDATEUR / ADMIN (doivent etre avant /:id)

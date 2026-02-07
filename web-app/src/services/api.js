@@ -42,6 +42,7 @@ api.interceptors.request.use(
       const isAdminContext = window.location.pathname.startsWith('/admin') ||
         originalUrl.includes('/a-valider') ||
         originalUrl.includes('/mes-contenus') ||
+        originalUrl.includes('/contenus/tous') ||
         originalUrl.includes('/stats-validation') ||
         originalUrl.includes('/validation');
 
@@ -120,6 +121,7 @@ export const contenuService = {
   getDomaines: () => api.get('/contenus/domaines'),
   getAll: (params) => api.get('/contenus', { params }),
   getCatalogue: (params) => api.get('/contenus', { params }),
+  getAllAdmin: (params) => api.get('/contenus/tous', { params }),
   getById: (id) => api.get(`/contenus/${id}`),
   // Admin
   create: (data) => api.post('/contenus', data),

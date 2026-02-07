@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FiUsers,
@@ -11,28 +11,94 @@ import {
   FiAlertCircle,
 } from 'react-icons/fi';
 import useAdminAuthStore from '../../stores/adminAuthStore';
+import { contenuService, adminService, validationService, gestionContenuService } from '../../services/api';
 import './AdminDashboard.css';
-
-const DEMO_STATS = {
-  totalUtilisateurs: 156,
-  totalContenus: 45,
-  contenusEnValidation: 8,
-  revenusMois: 450000,
-};
-
-const DEMO_CONTENUS_RECENTS = [
-  { id: 1, titre: 'Les lettres de l\'alphabet', statut: 'PUBLIE', dateCreation: new Date() },
-  { id: 2, titre: 'Addition et soustraction', statut: 'EN_VALIDATION', dateCreation: new Date() },
-  { id: 3, titre: 'Les animaux du Burkina', statut: 'BROUILLON', dateCreation: new Date() },
-];
 
 function AdminDashboard() {
   const { user, getRole, isAdmin } = useAdminAuthStore();
-  const [stats] = useState(DEMO_STATS);
-  const [contenusRecents] = useState(DEMO_CONTENUS_RECENTS);
+  const [stats, setStats] = useState({
+    totalUtilisateurs: 0,
+    totalContenus: 0,
+    contenusEnValidation: 0,
+    revenusMois: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [contenusRecents, setContenusRecents] = useState([]);
+  const [loadingContenus, setLoadingContenus] = useState(true);
 
   const userRole = getRole();
   const hasAdminRole = isAdmin();
+
+  // Charger les statistiques depuis l'API
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoadingStats(true);
+      try {
+        if (hasAdminRole) {
+          // Admin: utiliser l'endpoint admin/dashboard
+          const response = await adminService.getDashboard();
+          const data = response.data?.data;
+          if (data) {
+            setStats({
+              totalUtilisateurs: data.compteurs?.utilisateurs?.total || 0,
+              totalContenus: data.compteurs?.contenus?.total || 0,
+              contenusEnValidation: data.compteurs?.contenus?.total - data.compteurs?.contenus?.publies || 0,
+              revenusMois: data.compteurs?.paiements?.revenusMois || 0,
+            });
+          }
+        } else if (userRole?.toUpperCase() === 'VALIDATEUR') {
+          // Validateur: utiliser stats-validation
+          const response = await validationService.getStats();
+          const data = response.data?.data;
+          if (data) {
+            setStats({
+              totalUtilisateurs: 0,
+              totalContenus: data.publies || 0,
+              contenusEnValidation: data.enAttente || 0,
+              revenusMois: 0,
+            });
+          }
+        } else if (userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU') {
+          // Gestionnaire: utiliser mes-contenus qui retourne des stats
+          const response = await gestionContenuService.getMesContenus();
+          const data = response.data;
+          const statsData = data?.stats || {};
+          const total = data?.pagination?.total || 0;
+          setStats({
+            totalUtilisateurs: 0,
+            totalContenus: total,
+            contenusEnValidation: (statsData.en_attente || 0) + (statsData.a_amender || 0),
+            revenusMois: 0,
+          });
+        }
+      } catch (error) {
+        console.error('Erreur chargement stats:', error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, [hasAdminRole, userRole]);
+
+  // Charger les contenus recents depuis l'API
+  useEffect(() => {
+    const fetchContenusRecents = async () => {
+      setLoadingContenus(true);
+      try {
+        const response = await contenuService.getAllAdmin({ limit: 5 });
+        const data = response.data?.data || response.data || [];
+        setContenusRecents(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Erreur chargement contenus recents:', error);
+        setContenusRecents([]);
+      } finally {
+        setLoadingContenus(false);
+      }
+    };
+
+    fetchContenusRecents();
+  }, []);
 
   const getStatutIcon = (statut) => {
     switch (statut) {
@@ -78,31 +144,47 @@ function AdminDashboard() {
               <FiUsers />
             </div>
             <div className="stat-info">
-              <span className="stat-value">{stats.totalUtilisateurs}</span>
+              <span className="stat-value">
+                {loadingStats ? '...' : stats.totalUtilisateurs}
+              </span>
               <span className="stat-label">Utilisateurs</span>
             </div>
           </div>
         )}
 
-        <div className="admin-stat-card">
+        <Link
+          to={userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' ? '/admin/mes-contenus' : '/admin/contenus'}
+          className="admin-stat-card clickable"
+        >
           <div className="stat-icon green">
             <FiBook />
           </div>
           <div className="stat-info">
-            <span className="stat-value">{stats.totalContenus}</span>
-            <span className="stat-label">Contenus</span>
+            <span className="stat-value">
+              {loadingStats ? '...' : stats.totalContenus}
+            </span>
+            <span className="stat-label">
+              {userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' ? 'Mes contenus' : 'Contenus'}
+            </span>
           </div>
-        </div>
+        </Link>
 
-        <div className="admin-stat-card highlight">
+        <Link
+          to={userRole?.toUpperCase() === 'VALIDATEUR' ? '/admin/validations' : '/admin/contenus'}
+          className="admin-stat-card highlight clickable"
+        >
           <div className="stat-icon orange">
             <FiClock />
           </div>
           <div className="stat-info">
-            <span className="stat-value">{stats.contenusEnValidation}</span>
-            <span className="stat-label">En attente</span>
+            <span className="stat-value">
+              {loadingStats ? '...' : stats.contenusEnValidation}
+            </span>
+            <span className="stat-label">
+              {userRole?.toUpperCase() === 'VALIDATEUR' ? 'A valider' : 'En attente'}
+            </span>
           </div>
-        </div>
+        </Link>
 
         {hasAdminRole && (
           <div className="admin-stat-card">
@@ -110,7 +192,9 @@ function AdminDashboard() {
               <FiDollarSign />
             </div>
             <div className="stat-info">
-              <span className="stat-value">{(stats.revenusMois / 1000).toFixed(0)}k</span>
+              <span className="stat-value">
+                {loadingStats ? '...' : `${(stats.revenusMois / 1000).toFixed(0)}k`}
+              </span>
               <span className="stat-label">FCFA ce mois</span>
             </div>
           </div>
@@ -121,12 +205,15 @@ function AdminDashboard() {
       <div className="admin-section">
         <h2>Actions rapides</h2>
         <div className="quick-actions">
-          <Link to="/admin/contenus/nouveau" className="quick-action-card">
-            <div className="action-icon">
-              <FiPlus />
-            </div>
-            <span>Nouveau contenu</span>
-          </Link>
+          {/* Bug A: Masquer "Nouveau contenu" pour le validateur */}
+          {(userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' || hasAdminRole) && (
+            <Link to="/admin/contenus/nouveau" className="quick-action-card">
+              <div className="action-icon">
+                <FiPlus />
+              </div>
+              <span>Nouveau contenu</span>
+            </Link>
+          )}
 
           <Link to="/admin/contenus" className="quick-action-card">
             <div className="action-icon">
@@ -156,20 +243,31 @@ function AdminDashboard() {
         </div>
 
         <div className="contenus-list">
-          {contenusRecents.map((contenu) => (
-            <div key={contenu.id} className="contenu-item">
-              <div className="contenu-info">
-                <strong>{contenu.titre}</strong>
-                <span className="contenu-date">
-                  {new Date(contenu.dateCreation).toLocaleDateString('fr-FR')}
-                </span>
-              </div>
-              <div className="contenu-status">
-                {getStatutIcon(contenu.statut)}
-                <span>{getStatutLabel(contenu.statut)}</span>
-              </div>
+          {loadingContenus ? (
+            <div className="loading-contenus">
+              <div className="loader small"></div>
+              <span>Chargement...</span>
             </div>
-          ))}
+          ) : contenusRecents.length === 0 ? (
+            <div className="empty-contenus">
+              <span>Aucun contenu recent</span>
+            </div>
+          ) : (
+            contenusRecents.map((contenu) => (
+              <div key={contenu.id} className="contenu-item">
+                <div className="contenu-info">
+                  <strong>{contenu.titre}</strong>
+                  <span className="contenu-date">
+                    {new Date(contenu.date_creation || contenu.dateCreation).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
+                <div className="contenu-status">
+                  {getStatutIcon(contenu.statut?.toUpperCase())}
+                  <span>{getStatutLabel(contenu.statut?.toUpperCase())}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

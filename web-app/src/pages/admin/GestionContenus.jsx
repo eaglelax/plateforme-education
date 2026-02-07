@@ -6,7 +6,6 @@ import {
   FiTrash2,
   FiEye,
   FiSearch,
-  FiFilter,
   FiCheck,
   FiX,
   FiVideo,
@@ -15,59 +14,59 @@ import {
   FiMusic,
   FiPlay,
   FiHelpCircle,
+  FiCheckCircle,
+  FiFile,
 } from 'react-icons/fi';
 import { contenuService } from '../../services/api';
+import useAdminAuthStore from '../../stores/adminAuthStore';
 import './GestionContenus.css';
-
-const DEMO_CONTENUS = [
-  {
-    id: 1,
-    titre: 'Les lettres de l\'alphabet',
-    description: 'Apprendre a reconnaitre les lettres',
-    format: 'VIDEO',
-    domaine: { nom: 'Lecture' },
-    niveau: { libelle: 'CP1' },
-    statut: 'PUBLIE',
-    duree: 15,
-  },
-  {
-    id: 2,
-    titre: 'Addition et soustraction',
-    description: 'Exercices de calcul mental',
-    format: 'QUIZ',
-    domaine: { nom: 'Mathematiques' },
-    niveau: { libelle: 'CE1' },
-    statut: 'BROUILLON',
-    duree: 20,
-  },
-  {
-    id: 3,
-    titre: 'Les animaux du Burkina',
-    description: 'Decouvrir la faune locale',
-    format: 'IMAGE',
-    domaine: { nom: 'Sciences' },
-    niveau: { libelle: 'CE2' },
-    statut: 'EN_VALIDATION',
-    duree: 10,
-  },
-];
+import './Validations.css';
 
 const TYPES_ICONS = {
-  VIDEO: FiVideo,
-  QUIZ: FiHelpCircle,
-  IMAGE: FiImage,
-  AUDIO: FiMusic,
-  JEU_INTERACTIF: FiPlay,
-  PDF: FiFileText,
+  video: FiVideo,
+  quiz: FiHelpCircle,
+  image: FiImage,
+  audio: FiMusic,
+  jeu: FiPlay,
+  document: FiFileText,
+};
+
+// URL de base pour les fichiers statiques (uploads)
+const getBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  return apiUrl.replace(/\/api\/?$/, '');
 };
 
 function GestionContenus() {
+  const { user, getRole, isAdmin } = useAdminAuthStore();
   const [contenus, setContenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterDomaine, setFilterDomaine] = useState('');
   const [filterStatut, setFilterStatut] = useState('');
   const [domaines, setDomaines] = useState([]);
+
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedContenu, setSelectedContenu] = useState(null);
+  const [contenuDetail, setContenuDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const userRole = getRole()?.toUpperCase();
+  const hasAdminRole = isAdmin();
+
+  // Verifie si l'utilisateur peut modifier/supprimer un contenu
+  const canEdit = (contenu) => {
+    if (hasAdminRole) return true;
+    if (userRole === 'VALIDATEUR') return false;
+    // Gestionnaire peut modifier seulement ses propres contenus
+    return contenu.createur_id === user?.id;
+  };
+
+  // Verifie si l'utilisateur peut ajouter des contenus
+  const canAddContent = () => {
+    return userRole === 'GESTIONNAIRE_CONTENU' || hasAdminRole;
+  };
 
   useEffect(() => {
     loadData();
@@ -77,15 +76,16 @@ function GestionContenus() {
     setLoading(true);
     try {
       const [contenusRes, domainesRes] = await Promise.allSettled([
-        contenuService.getCatalogue({ limit: 100 }),
+        contenuService.getAllAdmin({ limit: 100 }),
         contenuService.getDomaines(),
       ]);
 
       if (contenusRes.status === 'fulfilled') {
-        const data = contenusRes.value.data?.contenus || contenusRes.value.data || [];
-        setContenus(Array.isArray(data) ? data : DEMO_CONTENUS);
+        const data = contenusRes.value.data?.data || contenusRes.value.data || [];
+        setContenus(Array.isArray(data) ? data : []);
       } else {
-        setContenus(DEMO_CONTENUS);
+        console.error('Erreur chargement contenus:', contenusRes.reason);
+        setContenus([]);
       }
 
       if (domainesRes.status === 'fulfilled') {
@@ -94,7 +94,7 @@ function GestionContenus() {
       }
     } catch (error) {
       console.error('Erreur:', error);
-      setContenus(DEMO_CONTENUS);
+      setContenus([]);
     } finally {
       setLoading(false);
     }
@@ -120,27 +120,69 @@ function GestionContenus() {
     }
   };
 
+  // Modal functions
+  const openDetail = async (contenu) => {
+    setSelectedContenu(contenu);
+    setShowModal(true);
+    setDetailLoading(true);
+    try {
+      const response = await contenuService.getById(contenu.id);
+      setContenuDetail(response.data?.data || null);
+    } catch (err) {
+      console.error('Erreur chargement detail:', err);
+      setContenuDetail(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedContenu(null);
+    setContenuDetail(null);
+  };
+
+  const getTypeLabel = (type) => {
+    const types = {
+      video: 'Video', audio: 'Audio', quiz: 'Quiz',
+      jeu: 'Jeu', document: 'Document', activite: 'Activite',
+    };
+    return types[type] || type;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
+
   const filteredContenus = contenus.filter((c) => {
     const matchSearch =
       c.titre?.toLowerCase().includes(search.toLowerCase()) ||
       c.description?.toLowerCase().includes(search.toLowerCase());
-    const matchDomaine = !filterDomaine || c.domaine?.nom === filterDomaine;
-    const matchStatut = !filterStatut || c.statut === filterStatut;
+    const matchDomaine = !filterDomaine || c.domaine_nom === filterDomaine;
+    const matchStatut = !filterStatut || c.statut?.toLowerCase() === filterStatut.toLowerCase();
     return matchSearch && matchDomaine && matchStatut;
   });
 
   const getStatutBadge = (statut) => {
+    const s = statut?.toLowerCase();
     const badges = {
-      PUBLIE: { class: 'badge-success', label: 'Publie' },
-      BROUILLON: { class: 'badge-secondary', label: 'Brouillon' },
-      EN_VALIDATION: { class: 'badge-warning', label: 'En validation' },
-      REJETE: { class: 'badge-danger', label: 'Rejete' },
+      publie: { class: 'badge-success', label: 'Publie' },
+      brouillon: { class: 'badge-secondary', label: 'Brouillon' },
+      en_attente: { class: 'badge-warning', label: 'En validation' },
+      en_attente_validation: { class: 'badge-warning', label: 'En validation' },
+      valide: { class: 'badge-success', label: 'Valide' },
+      rejete: { class: 'badge-danger', label: 'Rejete' },
+      a_amender: { class: 'badge-info', label: 'A amender' },
     };
-    return badges[statut] || { class: 'badge-secondary', label: statut };
+    return badges[s] || { class: 'badge-secondary', label: statut };
   };
 
   const getTypeIcon = (type) => {
-    const Icon = TYPES_ICONS[type] || FiFileText;
+    const Icon = TYPES_ICONS[type?.toLowerCase()] || FiFileText;
     return <Icon />;
   };
 
@@ -159,9 +201,11 @@ function GestionContenus() {
           <h1>Gestion des contenus</h1>
           <p>{contenus.length} contenus au total</p>
         </div>
-        <Link to="/admin/contenus/nouveau" className="btn btn-primary">
-          <FiPlus /> Nouveau contenu
-        </Link>
+        {canAddContent() && (
+          <Link to="/admin/contenus/nouveau" className="btn btn-primary">
+            <FiPlus /> Nouveau contenu
+          </Link>
+        )}
       </div>
 
       <div className="filters-bar">
@@ -194,10 +238,12 @@ function GestionContenus() {
           onChange={(e) => setFilterStatut(e.target.value)}
         >
           <option value="">Tous les statuts</option>
-          <option value="BROUILLON">Brouillon</option>
-          <option value="EN_VALIDATION">En validation</option>
-          <option value="PUBLIE">Publie</option>
-          <option value="REJETE">Rejete</option>
+          <option value="brouillon">Brouillon</option>
+          <option value="en_attente">En validation</option>
+          <option value="valide">Valide</option>
+          <option value="publie">Publie</option>
+          <option value="rejete">Rejete</option>
+          <option value="a_amender">A amender</option>
         </select>
       </div>
 
@@ -220,7 +266,7 @@ function GestionContenus() {
               return (
                 <tr key={contenu.id}>
                   <td>
-                    <div className="type-icon">{getTypeIcon(contenu.format)}</div>
+                    <div className="type-icon">{getTypeIcon(contenu.type)}</div>
                   </td>
                   <td>
                     <div className="contenu-info">
@@ -228,29 +274,34 @@ function GestionContenus() {
                       <span>{contenu.description?.substring(0, 50)}...</span>
                     </div>
                   </td>
-                  <td>{contenu.domaine?.nom}</td>
-                  <td>{contenu.niveau?.libelle}</td>
+                  <td>{contenu.domaine_nom}</td>
+                  <td>{contenu.niveau_nom || '-'}</td>
                   <td>
                     <span className={`badge ${badge.class}`}>{badge.label}</span>
                   </td>
-                  <td>{contenu.duree} min</td>
+                  <td>{contenu.duree_minutes || 0} min</td>
                   <td>
                     <div className="actions-cell">
-                      <Link
-                        to={`/admin/contenus/${contenu.id}`}
+                      {/* Bouton Voir: ouvre le modal de detail */}
+                      <button
                         className="btn-icon"
-                        title="Voir"
+                        title="Voir les details"
+                        onClick={() => openDetail(contenu)}
                       >
                         <FiEye />
-                      </Link>
-                      <Link
-                        to={`/admin/contenus/${contenu.id}/modifier`}
-                        className="btn-icon"
-                        title="Modifier"
-                      >
-                        <FiEdit2 />
-                      </Link>
-                      {contenu.statut === 'EN_VALIDATION' && (
+                      </button>
+                      {/* Bouton Modifier: seulement si canEdit */}
+                      {canEdit(contenu) && (
+                        <Link
+                          to={`/admin/contenus/${contenu.id}/modifier`}
+                          className="btn-icon"
+                          title="Modifier"
+                        >
+                          <FiEdit2 />
+                        </Link>
+                      )}
+                      {/* Boutons validation: seulement pour admin/validateur */}
+                      {contenu.statut?.toLowerCase() === 'en_attente' && (hasAdminRole || userRole === 'VALIDATEUR') && (
                         <>
                           <button
                             className="btn-icon success"
@@ -268,13 +319,16 @@ function GestionContenus() {
                           </button>
                         </>
                       )}
-                      <button
-                        className="btn-icon danger"
-                        title="Supprimer"
-                        onClick={() => handleDelete(contenu.id)}
-                      >
-                        <FiTrash2 />
-                      </button>
+                      {/* Bouton Supprimer: seulement si canEdit */}
+                      {canEdit(contenu) && (
+                        <button
+                          className="btn-icon danger"
+                          title="Supprimer"
+                          onClick={() => handleDelete(contenu.id)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -289,6 +343,205 @@ function GestionContenus() {
           </div>
         )}
       </div>
+
+      {/* Modal Detail Contenu */}
+      {showModal && selectedContenu && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Details du contenu</h3>
+              <button className="modal-close" onClick={closeModal}>&times;</button>
+            </div>
+
+            <div className="modal-body">
+              {/* Infos basiques */}
+              <div className="contenu-details">
+                <div className="detail-row">
+                  <label>Titre:</label>
+                  <span>{selectedContenu.titre}</span>
+                </div>
+                <div className="detail-row">
+                  <label>Type:</label>
+                  <span className={`type-badge ${selectedContenu.type}`}>
+                    {getTypeIcon(selectedContenu.type)}
+                    {getTypeLabel(selectedContenu.type)}
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <label>Domaine:</label>
+                  <span>{selectedContenu.domaine_nom}</span>
+                </div>
+                <div className="detail-row">
+                  <label>Description:</label>
+                  <p>{selectedContenu.description || 'Aucune description'}</p>
+                </div>
+                <div className="detail-row">
+                  <label>Statut:</label>
+                  <span className={`badge ${getStatutBadge(selectedContenu.statut).class}`}>
+                    {getStatutBadge(selectedContenu.statut).label}
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <label>Age cible:</label>
+                  <span>{selectedContenu.tranche_age_min} - {selectedContenu.tranche_age_max} ans</span>
+                </div>
+                {selectedContenu.createur_nom && (
+                  <div className="detail-row">
+                    <label>Createur:</label>
+                    <span>{selectedContenu.createur_prenom} {selectedContenu.createur_nom}</span>
+                  </div>
+                )}
+                <div className="detail-row">
+                  <label>Points XP:</label>
+                  <span>{selectedContenu.points_xp || 10}</span>
+                </div>
+                <div className="detail-row">
+                  <label>Date de creation:</label>
+                  <span>{formatDate(selectedContenu.date_creation)}</span>
+                </div>
+              </div>
+
+              {/* Details complets charges via API */}
+              {detailLoading ? (
+                <div className="detail-loading">
+                  <div className="loader small"></div>
+                  <p>Chargement des details...</p>
+                </div>
+              ) : contenuDetail ? (
+                <>
+                  {/* Miniature */}
+                  {contenuDetail.urlMiniature && (
+                    <div className="miniature-section">
+                      <h4>Miniature</h4>
+                      <div className="miniature-container">
+                        <img
+                          src={`${getBaseUrl()}${contenuDetail.urlMiniature}`}
+                          alt={`Miniature de ${contenuDetail.titre}`}
+                          className="miniature-image"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="miniature-placeholder" style={{ display: 'none' }}>
+                          {getTypeIcon(contenuDetail.type)}
+                          <span>Miniature non disponible</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Media Player selon le type */}
+                  {contenuDetail.urlMedia && (
+                    <div className="media-section">
+                      <h4>Contenu Media</h4>
+
+                      {contenuDetail.type === 'video' && (
+                        <div className="video-player-container">
+                          <video
+                            controls
+                            className="video-player"
+                            poster={contenuDetail.urlMiniature ? `${getBaseUrl()}${contenuDetail.urlMiniature}` : undefined}
+                          >
+                            <source src={`${getBaseUrl()}${contenuDetail.urlMedia}`} type="video/mp4" />
+                            Votre navigateur ne supporte pas la lecture video.
+                          </video>
+                        </div>
+                      )}
+
+                      {contenuDetail.type === 'audio' && (
+                        <div className="audio-player-container">
+                          <div className="audio-visual">
+                            {contenuDetail.urlMiniature ? (
+                              <img src={`${getBaseUrl()}${contenuDetail.urlMiniature}`} alt="Couverture audio" className="audio-cover" />
+                            ) : (
+                              <div className="audio-icon-large"><FiMusic size={48} /></div>
+                            )}
+                          </div>
+                          <audio controls className="audio-player">
+                            <source src={`${getBaseUrl()}${contenuDetail.urlMedia}`} type="audio/mpeg" />
+                          </audio>
+                        </div>
+                      )}
+
+                      {contenuDetail.type === 'document' && (
+                        <div className="document-viewer-container">
+                          {contenuDetail.urlMedia.toLowerCase().endsWith('.pdf') ? (
+                            <iframe src={`${getBaseUrl()}${contenuDetail.urlMedia}`} className="pdf-viewer" title="Document PDF" />
+                          ) : (
+                            <div className="document-download">
+                              <FiFileText size={48} />
+                              <p>Document disponible</p>
+                              <a href={`${getBaseUrl()}${contenuDetail.urlMedia}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                                <FiEye /> Voir le document
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {!['video', 'audio', 'document'].includes(contenuDetail.type) && (
+                        <a href={`${getBaseUrl()}${contenuDetail.urlMedia}`} target="_blank" rel="noopener noreferrer" className="media-link">
+                          <FiPlay /> Voir le contenu
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quiz */}
+                  {contenuDetail.quiz && (
+                    <div className="quiz-section">
+                      <h4>Quiz associe</h4>
+                      <div className="quiz-info">
+                        <span>Titre: {contenuDetail.quiz.titre}</span>
+                        <span>Score minimum: {contenuDetail.quiz.score_minimum}%</span>
+                        <span>Temps limite: {contenuDetail.quiz.temps_limite_minutes || 'Illimite'} min</span>
+                        <span>Questions: {contenuDetail.quiz.questions?.length || 0}</span>
+                      </div>
+
+                      {contenuDetail.quiz.questions?.map((question, qIndex) => (
+                        <div key={question.id} className="question-card">
+                          <div className="question-header">
+                            <span className="question-number">Q{qIndex + 1}</span>
+                            <span className="question-type">{question.type}</span>
+                            <span className="question-points">{question.points} pt(s)</span>
+                          </div>
+                          <p className="question-text">{question.texte}</p>
+                          <ul className="answers-list">
+                            {question.reponses?.map((reponse) => (
+                              <li key={reponse.id} className={reponse.est_correcte ? 'correct' : ''}>
+                                {reponse.est_correcte && <FiCheckCircle />}
+                                {reponse.texte}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="no-detail">Details non disponibles</p>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={closeModal}>
+                Fermer
+              </button>
+              {canEdit(selectedContenu) && (
+                <Link
+                  to={`/admin/contenus/${selectedContenu.id}/modifier`}
+                  className="btn btn-primary"
+                  onClick={closeModal}
+                >
+                  <FiEdit2 /> Modifier
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

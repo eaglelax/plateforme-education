@@ -131,6 +131,66 @@ const getAll = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Lister tous les contenus (admin/gestionnaire)
+ * GET /api/contenus/tous
+ */
+const getAllAdmin = asyncHandler(async (req, res) => {
+  const { page, limit } = paginate(req.query.page, req.query.limit);
+  const { domaineId, type, statut, search } = req.query;
+
+  let whereClause = '1=1';
+  const params = [];
+
+  // Tous les roles admin voient tous les contenus
+
+  if (statut) {
+    whereClause += ' AND c.statut = ?';
+    params.push(statut);
+  }
+
+  if (domaineId) {
+    whereClause += ' AND c.domaine_id = ?';
+    params.push(domaineId);
+  }
+
+  if (type) {
+    whereClause += ' AND c.type = ?';
+    params.push(type);
+  }
+
+  if (search) {
+    whereClause += ' AND (c.titre LIKE ? OR c.description LIKE ?)';
+    const searchTerm = `%${search}%`;
+    params.push(searchTerm, searchTerm);
+  }
+
+  const [countResult] = await query(
+    `SELECT COUNT(*) as total FROM contenus c WHERE ${whereClause}`,
+    params
+  );
+
+  const contenus = await query(
+    `SELECT c.*, d.nom as domaine_nom, d.icone as domaine_icone,
+            n.nom as niveau_nom,
+            u.nom as createur_nom, u.prenom as createur_prenom
+     FROM contenus c
+     JOIN domaines_educatifs d ON c.domaine_id = d.id
+     LEFT JOIN niveaux n ON c.niveau_id = n.id
+     LEFT JOIN utilisateurs u ON c.createur_id = u.id
+     WHERE ${whereClause}
+     ORDER BY c.date_creation DESC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, (page - 1) * limit]
+  );
+
+  res.json({
+    success: true,
+    data: contenus,
+    pagination: paginationMeta(countResult.total, page, limit)
+  });
+});
+
+/**
  * Obtenir un contenu par ID
  * GET /api/contenus/:id
  */
@@ -521,10 +581,26 @@ const publier = asyncHandler(async (req, res) => {
  */
 const getAValider = asyncHandler(async (req, res) => {
   const { page, limit } = paginate(req.query.page, req.query.limit);
-  const { type, domaineId } = req.query;
+  const { type, domaineId, statut, mesValidations } = req.query;
 
-  let whereClause = "c.statut = 'en_attente'";
+  let whereClause = "";
   const params = [];
+
+  // Filtrer par statut ou par mes validations
+  if (mesValidations === 'true') {
+    // Mes validations: contenus valides par moi
+    whereClause = "c.validateur_id = ?";
+    params.push(req.user.id);
+  } else if (statut === 'all') {
+    // Tous les contenus visibles par le validateur
+    whereClause = "c.statut IN ('en_attente', 'valide', 'a_amender')";
+  } else if (statut && ['en_attente', 'valide', 'a_amender'].includes(statut)) {
+    whereClause = "c.statut = ?";
+    params.push(statut);
+  } else {
+    // Par defaut: en attente
+    whereClause = "c.statut = 'en_attente'";
+  }
 
   if (type) {
     whereClause += ' AND c.type = ?';
@@ -979,6 +1055,7 @@ const deleteContenu = asyncHandler(async (req, res) => {
 module.exports = {
   getDomaines,
   getAll,
+  getAllAdmin,
   getById,
   create,
   update,

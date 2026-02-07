@@ -16,6 +16,7 @@ import {
   FiPlay,
   FiHelpCircle,
   FiRefreshCw,
+  FiLayers,
 } from 'react-icons/fi';
 import { gestionContenuService, contenuService } from '../../services/api';
 import './MesContenus.css';
@@ -192,6 +193,7 @@ function MesContenus() {
           className={`stat-card ${activeTab === 'tous' ? 'active' : ''}`}
           onClick={() => setActiveTab('tous')}
         >
+          <FiLayers className="stat-icon" />
           <span className="stat-value">{contenus.length}</span>
           <span className="stat-label">Total</span>
         </button>
