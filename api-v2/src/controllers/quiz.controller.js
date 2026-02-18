@@ -80,7 +80,7 @@ const createOrUpdate = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Vous ne pouvez modifier que vos propres contenus');
   }
 
@@ -213,7 +213,7 @@ const deleteQuiz = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Vous ne pouvez modifier que vos propres contenus');
   }
 
@@ -261,7 +261,7 @@ const addQuestion = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Quiz non trouve');
   }
 
-  if (quiz.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (quiz.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise');
   }
 
@@ -334,7 +334,7 @@ const updateQuestion = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Question non trouvee');
   }
 
-  if (question.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (question.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise');
   }
 
@@ -405,7 +405,7 @@ const deleteQuestion = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Question non trouvee');
   }
 
-  if (question.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (question.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise');
   }
 
@@ -458,7 +458,7 @@ const reorderQuestions = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Quiz non trouve');
   }
 
-  if (quiz.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (quiz.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise');
   }
 

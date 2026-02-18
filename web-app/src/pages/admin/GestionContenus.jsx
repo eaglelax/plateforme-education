@@ -17,7 +17,7 @@ import {
   FiCheckCircle,
   FiFile,
 } from 'react-icons/fi';
-import { contenuService } from '../../services/api';
+import { contenuService, validationService } from '../../services/api';
 import useAdminAuthStore from '../../stores/adminAuthStore';
 import './GestionContenus.css';
 import './Validations.css';
@@ -113,10 +113,19 @@ function GestionContenus() {
 
   const handleValider = async (id, action) => {
     try {
-      await contenuService.valider(id, { action });
+      if (action === 'APPROUVER') {
+        await validationService.valider(id);
+      } else if (action === 'REJETER') {
+        const commentaire = prompt('Commentaire pour le renvoi en amendement (obligatoire):');
+        if (!commentaire || !commentaire.trim()) {
+          alert('Le commentaire est obligatoire pour renvoyer un contenu');
+          return;
+        }
+        await validationService.amender(id, commentaire);
+      }
       loadData();
     } catch (error) {
-      alert('Erreur lors de la validation');
+      alert(error.response?.data?.message || 'Erreur lors de la validation');
     }
   };
 
@@ -127,10 +136,12 @@ function GestionContenus() {
     setDetailLoading(true);
     try {
       const response = await contenuService.getById(contenu.id);
-      setContenuDetail(response.data?.data || null);
+      const detail = response.data?.data || response.data || null;
+      setContenuDetail(detail);
     } catch (err) {
-      console.error('Erreur chargement detail:', err);
-      setContenuDetail(null);
+      console.error('Erreur chargement detail:', err.response?.status, err.response?.data || err.message);
+      // Fallback: utiliser les donnees de la liste comme detail partiel
+      setContenuDetail(contenu);
     } finally {
       setDetailLoading(false);
     }
@@ -251,12 +262,9 @@ function GestionContenus() {
         <table className="contenus-table">
           <thead>
             <tr>
-              <th>Type</th>
               <th>Titre</th>
               <th>Domaine</th>
-              <th>Niveau</th>
               <th>Statut</th>
-              <th>Duree</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -266,20 +274,18 @@ function GestionContenus() {
               return (
                 <tr key={contenu.id}>
                   <td>
-                    <div className="type-icon">{getTypeIcon(contenu.type)}</div>
-                  </td>
-                  <td>
-                    <div className="contenu-info">
-                      <strong>{contenu.titre}</strong>
-                      <span>{contenu.description?.substring(0, 50)}...</span>
+                    <div className="contenu-titre-cell">
+                      <div className="type-icon">{getTypeIcon(contenu.type)}</div>
+                      <div>
+                        <strong>{contenu.titre}</strong>
+                        <span className="contenu-desc">{contenu.description?.substring(0, 60)}...</span>
+                      </div>
                     </div>
                   </td>
                   <td>{contenu.domaine_nom}</td>
-                  <td>{contenu.niveau_nom || '-'}</td>
                   <td>
                     <span className={`badge ${badge.class}`}>{badge.label}</span>
                   </td>
-                  <td>{contenu.duree_minutes || 0} min</td>
                   <td>
                     <div className="actions-cell">
                       {/* Bouton Voir: ouvre le modal de detail */}

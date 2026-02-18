@@ -46,8 +46,9 @@ app.use((req, res) => {
 
 // Demarrage
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const HOST = process.env.HOST || '127.0.0.1';
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
   console.log(`API disponible sur http://localhost:${PORT}/api`);
 });
 

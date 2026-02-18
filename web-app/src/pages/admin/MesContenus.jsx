@@ -83,8 +83,9 @@ function MesContenus() {
       setContenus(response.data?.data || []);
       setStats(response.data?.stats || {});
     } catch (err) {
-      setError('Erreur lors du chargement des contenus');
-      console.error(err);
+      const msg = err.response?.data?.message || err.message || 'Erreur inconnue';
+      setError(`Erreur lors du chargement des contenus: ${msg}`);
+      console.error('MesContenus fetch error:', err.response?.status, msg);
     } finally {
       setLoading(false);
     }
@@ -240,7 +241,13 @@ function MesContenus() {
                   <div className="contenu-type">{getTypeIcon(contenu.type)}</div>
 
                   <div className="contenu-info">
-                    <h3>{contenu.titre}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.375rem' }}>
+                      <h3 style={{ margin: 0 }}>{contenu.titre}</h3>
+                      <span className={`badge ${statutConfig?.color}`}>
+                        <StatusIcon />
+                        {statutConfig?.label}
+                      </span>
+                    </div>
                     <p className="description">
                       {contenu.description?.substring(0, 100)}
                       {contenu.description?.length > 100 ? '...' : ''}
@@ -250,13 +257,6 @@ function MesContenus() {
                       <span className="age">{contenu.tranche_age_min}-{contenu.tranche_age_max} ans</span>
                       <span className="date">Cree le {formatDate(contenu.date_creation)}</span>
                     </div>
-                  </div>
-
-                  <div className="contenu-status">
-                    <span className={`badge ${statutConfig?.color}`}>
-                      <StatusIcon />
-                      {statutConfig?.label}
-                    </span>
                   </div>
 
                   {/* Commentaire validateur pour contenus a_amender */}

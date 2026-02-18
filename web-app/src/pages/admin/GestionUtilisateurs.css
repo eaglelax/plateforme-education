@@ -3,10 +3,6 @@
    Enhanced user management page styles
    =================================== */
 
-.gestion-utilisateurs-page {
-    /* Utilise les styles de base de AdminPages.css */
-}
-
 /* Enhanced User Cards for Table */
 .gestion-utilisateurs-page .user-info {
     display: flex;
@@ -27,6 +23,7 @@
     font-size: 0.95rem;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .gestion-utilisateurs-page tr:hover .user-avatar {
@@ -46,19 +43,6 @@
     letter-spacing: 0.04em;
     position: relative;
     overflow: hidden;
-}
-
-.gestion-utilisateurs-page .role-badge::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.5s ease;
-}
-
-.gestion-utilisateurs-page .role-badge:hover::before {
-    transform: translateX(100%);
 }
 
 .gestion-utilisateurs-page .badge-admin {
@@ -128,16 +112,200 @@
 .gestion-utilisateurs-page .btn-icon:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.gestion-utilisateurs-page .btn-icon:hover:first-child {
     background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
     color: var(--admin-primary, #6366F1);
     border-color: var(--admin-primary, #6366F1);
 }
 
-.gestion-utilisateurs-page .btn-icon:hover:last-child {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    color: #B45309;
-    border-color: #F59E0B;
+/* ========= MODAL STYLES ========= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--admin-radius-lg, 16px);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--admin-border, #E2E8F0);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--admin-text, #1E293B);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: var(--admin-border-light, #F1F5F9);
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--admin-text-muted, #64748B);
+    transition: all 0.2s ease;
+    font-size: 1.25rem;
+}
+
+.modal-close:hover {
+    background: var(--admin-border, #E2E8F0);
+    color: var(--admin-text, #1E293B);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--admin-border, #E2E8F0);
+}
+
+/* ========= USER DETAIL ========= */
+.user-detail .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--admin-border-light, #F1F5F9);
+}
+
+.user-avatar-large {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--admin-primary, #6366F1) 0%, var(--admin-purple, #8B5CF6) 100%);
+    border-radius: var(--admin-radius-lg, 16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    flex-shrink: 0;
+}
+
+.user-detail .detail-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    color: var(--admin-text, #1E293B);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--admin-text-muted, #64748B);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.375rem;
+}
+
+.detail-item span {
+    font-size: 0.95rem;
+    color: var(--admin-text, #1E293B);
+}
+
+/* ========= FORM STYLES ========= */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--admin-text, #1E293B);
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--admin-border, #E2E8F0);
+    border-radius: var(--admin-radius, 12px);
+    font-size: 0.95rem;
+    color: var(--admin-text, #1E293B);
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--admin-primary, #6366F1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-group input::placeholder {
+    color: var(--admin-text-light, #94A3B8);
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 100%;
+        margin: 0.5rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gestion-utilisateurs-page .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

@@ -44,7 +44,9 @@ api.interceptors.request.use(
         originalUrl.includes('/mes-contenus') ||
         originalUrl.includes('/contenus/tous') ||
         originalUrl.includes('/stats-validation') ||
-        originalUrl.includes('/validation');
+        originalUrl.includes('/validation') ||
+        originalUrl.includes('/utilisateurs') ||
+        originalUrl.includes('/admin/');
 
       // Utiliser admin-token en priorite si contexte admin
       const token = isAdminContext
@@ -281,10 +283,12 @@ export const adminService = {
   // Utilisateurs
   getUtilisateurs: (params) => api.get('/utilisateurs', { params }),
   getUtilisateur: (id) => api.get(`/utilisateurs/${id}`),
+  createUtilisateur: (data) => api.post('/utilisateurs', data),
   updateUtilisateur: (id, data) => api.put(`/utilisateurs/${id}`, data),
   deleteUtilisateur: (id) => api.delete(`/utilisateurs/${id}`),
-  // Contenus
-  validerContenu: (id) => api.put(`/contenus/${id}/publier`),
+  changeRole: (id, roleId) => api.put(`/utilisateurs/${id}/role`, { roleId }),
+  // Roles
+  getRoles: () => api.get('/admin/roles'),
 };
 
 // ============================================

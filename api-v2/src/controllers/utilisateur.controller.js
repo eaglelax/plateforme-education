@@ -316,6 +316,83 @@ const changeRole = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Creer un utilisateur avec un role specifique
+ * POST /api/utilisateurs
+ * - VALIDATEUR peut creer des GESTIONNAIRE_CONTENU
+ * - ADMIN peut creer des VALIDATEUR et GESTIONNAIRE_CONTENU
+ */
+const createUser = asyncHandler(async (req, res) => {
+  const { nom, prenom, telephone, email, motDePasse, roleId } = req.body;
+
+  // Verifier que le role demande existe
+  const [role] = await query('SELECT id, nom FROM roles WHERE id = ?', [roleId]);
+  if (!role) {
+    throw ApiError.notFound('Role non trouve');
+  }
+
+  const roleName = role.nom.toUpperCase();
+  const callerRole = req.user.role;
+
+  // Verifier les permissions de creation selon le role de l'appelant
+  if (callerRole === 'VALIDATEUR') {
+    if (roleName !== 'GESTIONNAIRE_CONTENU') {
+      throw ApiError.forbidden('Un validateur ne peut creer que des comptes gestionnaire de contenu');
+    }
+  } else if (callerRole === 'ADMIN') {
+    if (!['VALIDATEUR', 'GESTIONNAIRE_CONTENU'].includes(roleName)) {
+      throw ApiError.forbidden('Vous ne pouvez creer que des comptes validateur ou gestionnaire de contenu');
+    }
+  } else {
+    throw ApiError.forbidden('Vous n\'avez pas les droits pour creer des utilisateurs');
+  }
+
+  // Verifier si le telephone existe deja
+  const [existingPhone] = await query(
+    'SELECT id FROM utilisateurs WHERE telephone = ?',
+    [telephone]
+  );
+  if (existingPhone) {
+    throw ApiError.conflict('Ce numero de telephone est deja utilise');
+  }
+
+  // Verifier si l'email existe deja
+  if (email) {
+    const [existingEmail] = await query(
+      'SELECT id FROM utilisateurs WHERE email = ?',
+      [email]
+    );
+    if (existingEmail) {
+      throw ApiError.conflict('Cet email est deja utilise');
+    }
+  }
+
+  // Hasher le mot de passe
+  const hashedPassword = await bcrypt.hash(motDePasse, 12);
+
+  // Creer l'utilisateur
+  const result = await query(
+    `INSERT INTO utilisateurs (nom, prenom, telephone, email, mot_de_passe, role_id, statut_compte)
+     VALUES (?, ?, ?, ?, ?, ?, 'actif')`,
+    [nom, prenom, telephone, email || null, hashedPassword, roleId]
+  );
+
+  // Recuperer l'utilisateur cree
+  const [newUser] = await query(
+    `SELECT u.id, u.nom, u.prenom, u.telephone, u.email, u.statut_compte, r.nom as role
+     FROM utilisateurs u
+     JOIN roles r ON u.role_id = r.id
+     WHERE u.id = ?`,
+    [result.insertId]
+  );
+
+  res.status(201).json({
+    success: true,
+    message: `Compte ${roleName} cree avec succes`,
+    data: newUser
+  });
+});
+
 module.exports = {
   getProfil,
   updateProfil,
@@ -323,5 +400,6 @@ module.exports = {
   getById,
   update,
   delete: deleteUser,
-  changeRole
+  changeRole,
+  createUser
 };

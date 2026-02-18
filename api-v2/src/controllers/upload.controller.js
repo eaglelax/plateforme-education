@@ -250,7 +250,7 @@ const getFileInfo = asyncHandler(async (req, res) => {
   }
 
   // Verifier que l'utilisateur a le droit de voir ce fichier
-  if (file.utilisateur_id !== req.user.id && req.user.role !== 'admin') {
+  if (file.utilisateur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise a ce fichier');
   }
 
@@ -292,7 +292,7 @@ const deleteUploadedFile = asyncHandler(async (req, res) => {
   }
 
   // Verifier les droits
-  if (file.utilisateur_id !== req.user.id && req.user.role !== 'admin') {
+  if (file.utilisateur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Acces non autorise');
   }
 

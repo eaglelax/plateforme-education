@@ -354,7 +354,7 @@ const update = asyncHandler(async (req, res) => {
   }
 
   // Verifier les droits (createur ou admin)
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Vous ne pouvez modifier que vos propres contenus');
   }
 
@@ -497,7 +497,7 @@ const soumettre = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Vous ne pouvez soumettre que vos propres contenus');
   }
 
@@ -518,7 +518,7 @@ const soumettre = asyncHandler(async (req, res) => {
   const validateurs = await query(
     `SELECT u.id FROM utilisateurs u
      JOIN roles r ON u.role_id = r.id
-     WHERE r.nom IN ('validateur', 'admin') AND u.statut_compte = 'actif'`
+     WHERE r.nom IN ('VALIDATEUR', 'ADMIN') AND u.statut_compte = 'actif'`
   );
 
   for (const validateur of validateurs) {
@@ -550,7 +550,7 @@ const publier = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'admin') {
+  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
     throw ApiError.forbidden('Vous ne pouvez publier que vos propres contenus');
   }
 

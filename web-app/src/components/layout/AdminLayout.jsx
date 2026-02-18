@@ -39,7 +39,7 @@ function AdminLayout() {
   // Determiner les acces selon le role
   const canManageContent = hasAdminRole || isGestionnaireContenu;
   const canValidate = hasAdminRole || isValidateur;
-  const canViewUsers = hasAdminRole;
+  const canViewUsers = hasAdminRole || isValidateur;
   const canViewStats = hasAdminRole;
   const canViewPayments = hasAdminRole;
   const canViewSubscriptions = hasAdminRole;

@@ -1,19 +1,45 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiSearch, FiEdit2, FiTrash2, FiEye, FiAlertCircle } from 'react-icons/fi';
+import {
+  FiUsers, FiSearch, FiEdit2, FiTrash2, FiEye, FiAlertCircle,
+  FiPlus, FiX, FiUserPlus, FiShield, FiSave
+} from 'react-icons/fi';
 import { adminService } from '../../services/api';
+import useAdminAuthStore from '../../stores/adminAuthStore';
 import './AdminPages.css';
 import './GestionUtilisateurs.css';
 
 function GestionUtilisateurs() {
+  const { getRole, isAdmin } = useAdminAuthStore();
+  const userRole = getRole()?.toUpperCase();
+  const hasAdminRole = isAdmin();
+
   const [utilisateurs, setUtilisateurs] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const [pagination, setPagination] = useState({ page: 1, total: 0, limit: 20 });
 
+  // Modals
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+
+  // Edit form
+  const [editForm, setEditForm] = useState({ nom: '', prenom: '', email: '', statutCompte: '' });
+
+  // Create form
+  const [createForm, setCreateForm] = useState({
+    nom: '', prenom: '', telephone: '', email: '', motDePasse: '', roleId: ''
+  });
+
   useEffect(() => {
     fetchUtilisateurs();
-  }, [pagination.page, search]);
+    fetchRoles();
+  }, [pagination.page]);
 
   const fetchUtilisateurs = async () => {
     setLoading(true);
@@ -35,10 +61,137 @@ function GestionUtilisateurs() {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const response = await adminService.getRoles();
+      setRoles(response.data?.data || []);
+    } catch (err) {
+      console.error('Erreur chargement roles:', err);
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     setPagination(prev => ({ ...prev, page: 1 }));
     fetchUtilisateurs();
+  };
+
+  // Roles que cet utilisateur peut creer
+  const getCreatableRoles = () => {
+    if (hasAdminRole) {
+      return roles.filter(r => ['VALIDATEUR', 'GESTIONNAIRE_CONTENU'].includes(r.nom?.toUpperCase()));
+    }
+    if (userRole === 'VALIDATEUR') {
+      return roles.filter(r => r.nom?.toUpperCase() === 'GESTIONNAIRE_CONTENU');
+    }
+    return [];
+  };
+
+  // View user detail
+  const handleView = async (user) => {
+    setModalLoading(true);
+    setShowViewModal(true);
+    try {
+      const response = await adminService.getUtilisateur(user.id);
+      setSelectedUser(response.data?.data || user);
+    } catch (err) {
+      setSelectedUser(user);
+      console.error(err);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Open edit modal
+  const handleEdit = async (user) => {
+    setModalLoading(true);
+    setShowEditModal(true);
+    try {
+      const response = await adminService.getUtilisateur(user.id);
+      const u = response.data?.data || user;
+      setSelectedUser(u);
+      setEditForm({
+        nom: u.nom || '',
+        prenom: u.prenom || '',
+        email: u.email || '',
+        statutCompte: u.statut_compte || 'actif',
+        roleId: u.role_id || ''
+      });
+    } catch (err) {
+      setSelectedUser(user);
+      setEditForm({
+        nom: user.nom || '',
+        prenom: user.prenom || '',
+        email: user.email || '',
+        statutCompte: user.statut_compte || 'actif',
+        roleId: ''
+      });
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Save edit
+  const handleSaveEdit = async () => {
+    if (!selectedUser) return;
+    setModalLoading(true);
+    setError('');
+    try {
+      // Update user info
+      await adminService.updateUtilisateur(selectedUser.id, {
+        nom: editForm.nom,
+        prenom: editForm.prenom,
+        email: editForm.email || undefined,
+        statutCompte: editForm.statutCompte
+      });
+
+      // If role changed and we have admin rights
+      if (editForm.roleId && editForm.roleId !== selectedUser.role_id && hasAdminRole) {
+        await adminService.changeRole(selectedUser.id, editForm.roleId);
+      }
+
+      setSuccess('Utilisateur mis a jour');
+      setShowEditModal(false);
+      setSelectedUser(null);
+      fetchUtilisateurs();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la mise a jour');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Delete user
+  const handleDelete = async (user) => {
+    if (!confirm(`Supprimer l'utilisateur ${user.prenom} ${user.nom} ? Cette action est irreversible.`)) return;
+    try {
+      await adminService.deleteUtilisateur(user.id);
+      setSuccess('Utilisateur supprime');
+      fetchUtilisateurs();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la suppression');
+    }
+  };
+
+  // Create user
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setModalLoading(true);
+    setError('');
+    try {
+      await adminService.createUtilisateur(createForm);
+      setSuccess('Compte cree avec succes');
+      setShowCreateModal(false);
+      setCreateForm({ nom: '', prenom: '', telephone: '', email: '', motDePasse: '', roleId: '' });
+      fetchUtilisateurs();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la creation');
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const getRoleBadgeClass = (role) => {
@@ -51,6 +204,16 @@ function GestionUtilisateurs() {
     }
   };
 
+  const getRoleLabel = (role) => {
+    switch (role?.toUpperCase()) {
+      case 'GESTIONNAIRE_CONTENU': return 'Gestionnaire';
+      case 'VALIDATEUR': return 'Validateur';
+      case 'ADMIN': return 'Admin';
+      case 'PARENT': return 'Parent';
+      default: return role;
+    }
+  };
+
   const getStatusBadge = (statut) => {
     switch (statut) {
       case 'actif': return <span className="status-badge active">Actif</span>;
@@ -59,6 +222,15 @@ function GestionUtilisateurs() {
       default: return <span className="status-badge">{statut}</span>;
     }
   };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+  };
+
+  const creatableRoles = getCreatableRoles();
 
   if (loading && utilisateurs.length === 0) {
     return (
@@ -72,7 +244,7 @@ function GestionUtilisateurs() {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page gestion-utilisateurs-page">
       <div className="page-header">
         <div className="header-content">
           <FiUsers className="header-icon" />
@@ -81,12 +253,30 @@ function GestionUtilisateurs() {
             <p>Gerez les comptes utilisateurs de la plateforme</p>
           </div>
         </div>
+        {creatableRoles.length > 0 && (
+          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            <FiUserPlus /> Creer un compte
+          </button>
+        )}
       </div>
 
       {error && (
         <div className="error-alert">
           <FiAlertCircle />
           <span>{error}</span>
+          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 600 }}>Fermer</button>
+        </div>
+      )}
+
+      {success && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem',
+          background: 'linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%)',
+          border: '1px solid #86EFAC', borderRadius: '12px', color: '#065F46',
+          marginBottom: '1.5rem'
+        }}>
+          <FiShield />
+          <span>{success}</span>
         </div>
       )}
 
@@ -139,24 +329,32 @@ function GestionUtilisateurs() {
                   </td>
                   <td>
                     <div className="contact-info">
-                      <span>{user.email}</span>
+                      <span>{user.email || '-'}</span>
                       <span className="phone">{user.telephone}</span>
                     </div>
                   </td>
                   <td>
                     <span className={`role-badge ${getRoleBadgeClass(user.role_nom || user.role)}`}>
-                      {user.role_nom || user.role}
+                      {getRoleLabel(user.role_nom || user.role)}
                     </span>
                   </td>
                   <td>{getStatusBadge(user.statut_compte)}</td>
-                  <td>{new Date(user.date_creation).toLocaleDateString('fr-FR')}</td>
+                  <td>{formatDate(user.date_creation)}</td>
                   <td className="actions-cell">
-                    <button className="btn-icon" title="Voir">
+                    <button className="btn-icon" title="Voir" onClick={() => handleView(user)}>
                       <FiEye />
                     </button>
-                    <button className="btn-icon" title="Modifier">
-                      <FiEdit2 />
-                    </button>
+                    {hasAdminRole && (
+                      <>
+                        <button className="btn-icon" title="Modifier" onClick={() => handleEdit(user)}>
+                          <FiEdit2 />
+                        </button>
+                        <button className="btn-icon" title="Supprimer" onClick={() => handleDelete(user)}
+                          style={{ color: '#EF4444' }}>
+                          <FiTrash2 />
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))
@@ -180,6 +378,202 @@ function GestionUtilisateurs() {
           >
             Suivant
           </button>
+        </div>
+      )}
+
+      {/* ========= MODAL: Voir utilisateur ========= */}
+      {showViewModal && (
+        <div className="modal-overlay" onClick={() => { setShowViewModal(false); setSelectedUser(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detail de l'utilisateur</h3>
+              <button className="modal-close" onClick={() => { setShowViewModal(false); setSelectedUser(null); }}><FiX /></button>
+            </div>
+            <div className="modal-body">
+              {modalLoading ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}><div className="loader" style={{ margin: '0 auto' }}></div></div>
+              ) : selectedUser ? (
+                <div className="user-detail">
+                  <div className="detail-header">
+                    <div className="user-avatar-large">
+                      {selectedUser.prenom?.[0]}{selectedUser.nom?.[0]}
+                    </div>
+                    <div>
+                      <h2>{selectedUser.prenom} {selectedUser.nom}</h2>
+                      <span className={`role-badge ${getRoleBadgeClass(selectedUser.role)}`}>
+                        {getRoleLabel(selectedUser.role)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <label>Email</label>
+                      <span>{selectedUser.email || 'Non renseigne'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <label>Telephone</label>
+                      <span>{selectedUser.telephone}</span>
+                    </div>
+                    <div className="detail-item">
+                      <label>Statut</label>
+                      {getStatusBadge(selectedUser.statut_compte)}
+                    </div>
+                    <div className="detail-item">
+                      <label>Inscription</label>
+                      <span>{formatDate(selectedUser.date_creation)}</span>
+                    </div>
+                    <div className="detail-item">
+                      <label>Derniere connexion</label>
+                      <span>{selectedUser.derniere_connexion ? formatDate(selectedUser.derniere_connexion) : 'Jamais'}</span>
+                    </div>
+                  </div>
+                  {selectedUser.enfants?.length > 0 && (
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <h4>Enfants ({selectedUser.enfants.length})</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        {selectedUser.enfants.map(e => (
+                          <div key={e.id} style={{ padding: '0.75rem', background: '#F8FAFC', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                            <span><strong>{e.nom_pseudo}</strong> - {e.age} ans</span>
+                            <span style={{ color: '#64748B' }}>{e.code_connexion}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => { setShowViewModal(false); setSelectedUser(null); }}>Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========= MODAL: Modifier utilisateur ========= */}
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => { setShowEditModal(false); setSelectedUser(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Modifier l'utilisateur</h3>
+              <button className="modal-close" onClick={() => { setShowEditModal(false); setSelectedUser(null); }}><FiX /></button>
+            </div>
+            <div className="modal-body">
+              {modalLoading && !selectedUser ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}><div className="loader" style={{ margin: '0 auto' }}></div></div>
+              ) : (
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Prenom</label>
+                    <input type="text" value={editForm.prenom} onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Nom</label>
+                    <input type="text" value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Statut du compte</label>
+                    <select value={editForm.statutCompte} onChange={(e) => setEditForm({ ...editForm, statutCompte: e.target.value })}>
+                      <option value="actif">Actif</option>
+                      <option value="inactif">Inactif</option>
+                      <option value="suspendu">Suspendu</option>
+                    </select>
+                  </div>
+                  {hasAdminRole && roles.length > 0 && (
+                    <div className="form-group full-width">
+                      <label>Role</label>
+                      <select value={editForm.roleId} onChange={(e) => setEditForm({ ...editForm, roleId: parseInt(e.target.value) })}>
+                        <option value="">-- Ne pas changer --</option>
+                        {roles.map(r => (
+                          <option key={r.id} value={r.id}>{getRoleLabel(r.nom)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => { setShowEditModal(false); setSelectedUser(null); }}>Annuler</button>
+              <button className="btn btn-primary" onClick={handleSaveEdit} disabled={modalLoading}>
+                <FiSave /> {modalLoading ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========= MODAL: Creer un utilisateur ========= */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><FiUserPlus /> Creer un compte</h3>
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}><FiX /></button>
+            </div>
+            <form onSubmit={handleCreate}>
+              <div className="modal-body">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Prenom *</label>
+                    <input type="text" required value={createForm.prenom}
+                      onChange={(e) => setCreateForm({ ...createForm, prenom: e.target.value })}
+                      placeholder="Prenom" />
+                  </div>
+                  <div className="form-group">
+                    <label>Nom *</label>
+                    <input type="text" required value={createForm.nom}
+                      onChange={(e) => setCreateForm({ ...createForm, nom: e.target.value })}
+                      placeholder="Nom" />
+                  </div>
+                  <div className="form-group">
+                    <label>Telephone *</label>
+                    <input type="tel" required value={createForm.telephone}
+                      onChange={(e) => setCreateForm({ ...createForm, telephone: e.target.value })}
+                      placeholder="Ex: +226 70 00 00 00" />
+                  </div>
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" value={createForm.email}
+                      onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                      placeholder="email@exemple.com" />
+                  </div>
+                  <div className="form-group">
+                    <label>Mot de passe *</label>
+                    <input type="password" required minLength={6} value={createForm.motDePasse}
+                      onChange={(e) => setCreateForm({ ...createForm, motDePasse: e.target.value })}
+                      placeholder="Minimum 6 caracteres" />
+                  </div>
+                  <div className="form-group">
+                    <label>Role *</label>
+                    <select required value={createForm.roleId}
+                      onChange={(e) => setCreateForm({ ...createForm, roleId: parseInt(e.target.value) || '' })}>
+                      <option value="">-- Selectionner un role --</option>
+                      {creatableRoles.map(r => (
+                        <option key={r.id} value={r.id}>{getRoleLabel(r.nom)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#EEF2FF', borderRadius: '8px', fontSize: '0.85rem', color: '#4F46E5' }}>
+                  {userRole === 'VALIDATEUR'
+                    ? 'En tant que validateur, vous pouvez creer des comptes gestionnaire de contenu.'
+                    : 'En tant qu\'administrateur, vous pouvez creer des comptes validateur et gestionnaire de contenu.'
+                  }
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-primary" disabled={modalLoading}>
+                  <FiUserPlus /> {modalLoading ? 'Creation...' : 'Creer le compte'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

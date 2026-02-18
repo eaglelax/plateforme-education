@@ -36,14 +36,18 @@ function AdminDashboard() {
       try {
         if (hasAdminRole) {
           // Admin: utiliser l'endpoint admin/dashboard
-          const response = await adminService.getDashboard();
-          const data = response.data?.data;
+          const [dashRes, validRes] = await Promise.allSettled([
+            adminService.getDashboard(),
+            validationService.getStats(),
+          ]);
+          const data = dashRes.status === 'fulfilled' ? dashRes.value.data?.data : null;
+          const validData = validRes.status === 'fulfilled' ? validRes.value.data?.data : null;
           if (data) {
             setStats({
               totalUtilisateurs: data.compteurs?.utilisateurs?.total || 0,
               totalContenus: data.compteurs?.contenus?.total || 0,
-              contenusEnValidation: data.compteurs?.contenus?.total - data.compteurs?.contenus?.publies || 0,
-              revenusMois: data.compteurs?.paiements?.revenusMois || 0,
+              contenusEnValidation: validData?.enAttente || 0,
+              revenusMois: data.compteurs?.revenus?.moisEnCours || 0,
             });
           }
         } else if (userRole?.toUpperCase() === 'VALIDATEUR') {
@@ -100,30 +104,18 @@ function AdminDashboard() {
     fetchContenusRecents();
   }, []);
 
-  const getStatutIcon = (statut) => {
-    switch (statut) {
-      case 'PUBLIE':
-        return <FiCheckCircle className="status-icon success" />;
-      case 'EN_VALIDATION':
-        return <FiClock className="status-icon warning" />;
-      case 'BROUILLON':
-        return <FiAlertCircle className="status-icon secondary" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatutLabel = (statut) => {
-    switch (statut) {
-      case 'PUBLIE':
-        return 'Publie';
-      case 'EN_VALIDATION':
-        return 'En validation';
-      case 'BROUILLON':
-        return 'Brouillon';
-      default:
-        return statut;
-    }
+  const getStatutConfig = (statut) => {
+    const s = statut?.toLowerCase();
+    const configs = {
+      publie: { icon: <FiCheckCircle className="status-icon success" />, label: 'Publie' },
+      en_attente: { icon: <FiClock className="status-icon warning" />, label: 'En attente' },
+      brouillon: { icon: <FiAlertCircle className="status-icon secondary" />, label: 'Brouillon' },
+      valide: { icon: <FiCheckCircle className="status-icon success" />, label: 'Valide' },
+      a_amender: { icon: <FiAlertCircle className="status-icon danger" />, label: 'A amender' },
+      rejete: { icon: <FiAlertCircle className="status-icon danger" />, label: 'Rejete' },
+      archive: { icon: <FiAlertCircle className="status-icon secondary" />, label: 'Archive' },
+    };
+    return configs[s] || { icon: null, label: statut || '-' };
   };
 
   return (
@@ -253,20 +245,23 @@ function AdminDashboard() {
               <span>Aucun contenu recent</span>
             </div>
           ) : (
-            contenusRecents.map((contenu) => (
-              <div key={contenu.id} className="contenu-item">
-                <div className="contenu-info">
-                  <strong>{contenu.titre}</strong>
-                  <span className="contenu-date">
-                    {new Date(contenu.date_creation || contenu.dateCreation).toLocaleDateString('fr-FR')}
-                  </span>
+            contenusRecents.map((contenu) => {
+              const cfg = getStatutConfig(contenu.statut);
+              return (
+                <div key={contenu.id} className="contenu-item">
+                  <div className="contenu-info">
+                    <strong>{contenu.titre}</strong>
+                    <span className="contenu-date">
+                      {new Date(contenu.date_creation || contenu.dateCreation).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+                  <div className="contenu-status">
+                    {cfg.icon}
+                    <span>{cfg.label}</span>
+                  </div>
                 </div>
-                <div className="contenu-status">
-                  {getStatutIcon(contenu.statut?.toUpperCase())}
-                  <span>{getStatutLabel(contenu.statut?.toUpperCase())}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
