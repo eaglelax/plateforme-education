@@ -76,10 +76,10 @@ app.all('/', async (req, res, next) => {
 
     return routes(req, res, (err) => {
       if (err) {
-        return res.status(500).json({
+        const status = err.status || err.statusCode || 500;
+        return res.status(status).json({
           success: false,
-          message: 'Erreur serveur',
-          error: err.message
+          message: err.message || 'Erreur serveur'
         });
       }
       // Si next() est appele sans erreur, route non trouvee
