@@ -111,6 +111,28 @@
   border-bottom: 1px solid var(--admin-border, #E2E8F0);
 }
 
+/* Column widths */
+.contenus-table th:nth-child(1),
+.contenus-table td:nth-child(1) {
+  width: 40%;
+}
+
+.contenus-table th:nth-child(2),
+.contenus-table td:nth-child(2) {
+  width: 20%;
+}
+
+.contenus-table th:nth-child(3),
+.contenus-table td:nth-child(3) {
+  width: 15%;
+}
+
+.contenus-table th:last-child,
+.contenus-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .contenus-table td {
   padding: 1.125rem 1.25rem;
   border-bottom: 1px solid var(--admin-border-light, #F1F5F9);
@@ -120,27 +142,10 @@
 
 .contenus-table tbody tr {
   transition: var(--admin-transition, all 0.3s ease);
-  position: relative;
-}
-
-.contenus-table tbody tr::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 0;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), transparent);
-  transition: width 0.3s ease;
-  pointer-events: none;
 }
 
 .contenus-table tbody tr:hover {
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.02), transparent);
-}
-
-.contenus-table tbody tr:hover::before {
-  width: 100%;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.04), transparent);
 }
 
 .contenus-table tbody tr:last-child td {

@@ -315,9 +315,111 @@ const getProgressionDetaille = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Obtenir ses statistiques globales (enfant)
+ * GET /api/historique/mes-stats
+ */
+const getMesStats = asyncHandler(async (req, res) => {
+  const enfantId = req.user.id;
+
+  const [enfant] = await query(
+    'SELECT points_xp, niveau_global FROM profils_enfants WHERE id = ?',
+    [enfantId]
+  );
+
+  const [stats] = await query(
+    `SELECT
+       COUNT(CASE WHEN ha.est_complete = TRUE THEN 1 END) as contenus_termines,
+       COUNT(CASE WHEN ha.est_complete = TRUE AND ha.score IS NOT NULL THEN 1 END) as quiz_termines,
+       SUM(ha.temps_passe_secondes) as temps_total_secondes,
+       AVG(CASE WHEN ha.score IS NOT NULL THEN ha.score END) as score_moyen,
+       SUM(ha.points_gagnes) as total_points_gagnes
+     FROM historique_apprentissage ha
+     WHERE ha.enfant_id = ?`,
+    [enfantId]
+  );
+
+  const [badgeCount] = await query(
+    'SELECT COUNT(*) as count FROM badges_enfants WHERE enfant_id = ?',
+    [enfantId]
+  );
+
+  // Import level helpers
+  const { getLevelFromXp, getXpThreshold } = require('./quiz.controller');
+
+  const currentLevel = getLevelFromXp(enfant.points_xp);
+  const xpForCurrentLevel = getXpThreshold(currentLevel);
+  const xpForNextLevel = getXpThreshold(currentLevel + 1);
+  const xpInCurrentLevel = enfant.points_xp - xpForCurrentLevel;
+  const xpNeededForNext = xpForNextLevel - xpForCurrentLevel;
+
+  res.json({
+    success: true,
+    data: {
+      pointsXp: enfant.points_xp,
+      niveau: currentLevel,
+      xpInCurrentLevel,
+      xpNeededForNext,
+      xpForNextLevel,
+      contenusTermines: stats.contenus_termines || 0,
+      quizTermines: stats.quiz_termines || 0,
+      tempsTotalMinutes: Math.round((stats.temps_total_secondes || 0) / 60),
+      scoreMoyen: Math.round(stats.score_moyen || 0),
+      totalPointsGagnes: stats.total_points_gagnes || 0,
+      badgesObtenus: badgeCount.count || 0
+    }
+  });
+});
+
+/**
+ * Synchroniser les XP des jeux vers le profil
+ * POST /api/historique/sync-game-xp
+ * Body: { gameXp: int }
+ */
+const syncGameXp = asyncHandler(async (req, res) => {
+  const enfantId = req.user.id;
+  const { gameXp } = req.body;
+
+  if (!gameXp || gameXp <= 0) {
+    throw ApiError.badRequest('gameXp doit etre un entier positif');
+  }
+
+  // Add game XP to profile
+  await query(
+    'UPDATE profils_enfants SET points_xp = points_xp + ? WHERE id = ?',
+    [gameXp, enfantId]
+  );
+
+  // Auto level-up
+  const { getLevelFromXp } = require('./quiz.controller');
+  const [enfant] = await query(
+    'SELECT points_xp, niveau_global FROM profils_enfants WHERE id = ?',
+    [enfantId]
+  );
+
+  const newLevel = getLevelFromXp(enfant.points_xp);
+  if (newLevel > enfant.niveau_global) {
+    await query(
+      'UPDATE profils_enfants SET niveau_global = ? WHERE id = ?',
+      [newLevel, enfantId]
+    );
+  }
+
+  res.json({
+    success: true,
+    message: 'XP synchronises',
+    data: {
+      totalXp: enfant.points_xp,
+      niveau: Math.max(newLevel, enfant.niveau_global)
+    }
+  });
+});
+
 module.exports = {
   getMonHistorique,
   getMesBadges,
+  getMesStats,
+  syncGameXp,
   getHistoriqueEnfant,
   getResumeEnfant,
   getTempsEcran,

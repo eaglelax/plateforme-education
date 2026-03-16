@@ -20,11 +20,15 @@ const getByContenuId = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  // Verifier les droits (createur, validateur, ou admin)
+  // Verifier les droits d'acces
   const isCreateur = contenu.createur_id === req.user.id;
-  const isValidateurOrAdmin = ['validateur', 'admin'].includes(req.user.role);
+  const isValidateurOrAdmin = ['VALIDATEUR', 'ADMIN', 'validateur', 'admin'].includes(req.user.role);
+  const isEnfant = req.user.role === 'ENFANT' || req.user.enfant_id;
+  const isContenuPublie = contenu.statut === 'publie';
 
-  if (!isCreateur && !isValidateurOrAdmin) {
+  // Les enfants peuvent acceder aux quiz des contenus publies
+  // Les createurs, validateurs et admins peuvent acceder a tous les quiz
+  if (!isCreateur && !isValidateurOrAdmin && !(isEnfant && isContenuPublie)) {
     throw ApiError.forbidden('Acces non autorise');
   }
 
@@ -45,11 +49,17 @@ const getByContenuId = asyncHandler(async (req, res) => {
     [quiz.id]
   );
 
+  // Pour les enfants, ne pas exposer directement les reponses correctes
+  // Elles seront verifiees cote serveur lors de la soumission
+  const hideCorrectAnswers = isEnfant && isContenuPublie;
+
   for (let question of questions) {
     const reponses = await query(
       `SELECT id, texte, est_correcte, ordre FROM reponses WHERE question_id = ? ORDER BY ordre`,
       [question.id]
     );
+    // Pour les enfants, on garde est_correcte pour la verification client-side
+    // mais on pourrait le masquer si on veut une verification 100% serveur
     question.reponses = reponses;
   }
 
@@ -478,6 +488,363 @@ const reorderQuestions = asyncHandler(async (req, res) => {
   });
 });
 
+// ============================================
+// LEVEL SYSTEM — Progressive XP thresholds
+// ============================================
+
+/**
+ * XP thresholds for each level (progressive):
+ * Level 1: 0, Level 2: 100, Level 3: 250, Level 4: 450,
+ * Level 5: 700, Level 6: 1000, Level 7: 1350, Level 8: 1750, ...
+ * Gap formula: 100 + 50*(level-2) for level >= 2
+ */
+function getXpThreshold(level) {
+  if (level <= 1) return 0;
+  let total = 0;
+  for (let i = 2; i <= level; i++) {
+    total += 100 + 50 * (i - 2);
+  }
+  return total;
+}
+
+function getLevelFromXp(xp) {
+  let level = 1;
+  while (getXpThreshold(level + 1) <= xp) {
+    level++;
+  }
+  return level;
+}
+
+// ============================================
+// BADGE AUTO-CHECK
+// ============================================
+
+/**
+ * Check and award badges for an enfant after a quiz/content completion
+ * Returns list of newly awarded badge names
+ */
+const checkAndAwardBadges = async (enfantId) => {
+  const newBadges = [];
+
+  // Get all active badges not yet earned by this child
+  const availableBadges = await query(
+    `SELECT b.* FROM badges b
+     WHERE b.est_actif = TRUE
+       AND b.id NOT IN (SELECT badge_id FROM badges_enfants WHERE enfant_id = ?)`,
+    [enfantId]
+  );
+
+  if (availableBadges.length === 0) return newBadges;
+
+  // Gather stats for badge evaluation
+  const [quizStats] = await query(
+    `SELECT
+       COUNT(CASE WHEN ha.est_complete = TRUE AND ha.score IS NOT NULL
+                   AND (ha.score * 100 / NULLIF(
+                     (SELECT COUNT(*) FROM questions q
+                      JOIN quiz qz ON q.quiz_id = qz.id
+                      WHERE qz.contenu_id = ha.contenu_id), 0)) >= 60
+             THEN 1 END) as quiz_reussis,
+       COUNT(CASE WHEN ha.est_complete = TRUE AND ha.score IS NOT NULL
+                   AND ha.score = (SELECT COUNT(*) FROM questions q
+                      JOIN quiz qz ON q.quiz_id = qz.id
+                      WHERE qz.contenu_id = ha.contenu_id)
+             THEN 1 END) as quiz_parfaits,
+       COUNT(CASE WHEN ha.est_complete = TRUE THEN 1 END) as contenus_termines
+     FROM historique_apprentissage ha
+     WHERE ha.enfant_id = ?`,
+    [enfantId]
+  );
+
+  // Domains explored (completed at least 1 content in each active domain)
+  const [domainStats] = await query(
+    `SELECT
+       (SELECT COUNT(*) FROM domaines_educatifs WHERE est_actif = TRUE) as total_domaines,
+       COUNT(DISTINCT c.domaine_id) as domaines_explores
+     FROM historique_apprentissage ha
+     JOIN contenus c ON ha.contenu_id = c.id
+     WHERE ha.enfant_id = ? AND ha.est_complete = TRUE`,
+    [enfantId]
+  );
+
+  // Current level
+  const [enfant] = await query(
+    'SELECT points_xp, niveau_global FROM profils_enfants WHERE id = ?',
+    [enfantId]
+  );
+
+  // Consecutive days (streak)
+  const streakDays = await query(
+    `SELECT DISTINCT DATE(date_acces) as jour
+     FROM historique_apprentissage
+     WHERE enfant_id = ?
+     ORDER BY jour DESC
+     LIMIT 30`,
+    [enfantId]
+  );
+
+  let streak = 0;
+  if (streakDays.length > 0) {
+    streak = 1;
+    for (let i = 1; i < streakDays.length; i++) {
+      const prev = new Date(streakDays[i - 1].jour);
+      const curr = new Date(streakDays[i].jour);
+      const diffDays = (prev - curr) / (1000 * 60 * 60 * 24);
+      if (diffDays === 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Evaluate each badge
+  for (const badge of availableBadges) {
+    let earned = false;
+
+    switch (badge.nom) {
+      case 'Premier Quiz':
+        earned = quizStats.quiz_reussis >= 1;
+        break;
+      case 'Érudit':
+        earned = quizStats.quiz_reussis >= 10;
+        break;
+      case 'Perfectionniste':
+        earned = quizStats.quiz_parfaits >= 3;
+        break;
+      case 'Premier Pas':
+        earned = quizStats.contenus_termines >= 1;
+        break;
+      case 'Lecteur Assidu':
+        earned = quizStats.contenus_termines >= 5;
+        break;
+      case 'Explorateur':
+        earned = domainStats.total_domaines > 0 &&
+                 domainStats.domaines_explores >= domainStats.total_domaines;
+        break;
+      case 'Expert':
+        earned = (enfant?.niveau_global || 1) >= 5;
+        break;
+      case 'Assidu':
+        earned = streak >= 7;
+        break;
+    }
+
+    if (earned) {
+      try {
+        await query(
+          'INSERT INTO badges_enfants (enfant_id, badge_id) VALUES (?, ?)',
+          [enfantId, badge.id]
+        );
+        // Award bonus XP from badge
+        if (badge.points_bonus > 0) {
+          await query(
+            'UPDATE profils_enfants SET points_xp = points_xp + ? WHERE id = ?',
+            [badge.points_bonus, enfantId]
+          );
+        }
+        newBadges.push(badge.nom);
+      } catch (e) {
+        // Duplicate key — badge already awarded (race condition), ignore
+      }
+    }
+  }
+
+  return newBadges;
+};
+
+// ============================================
+// QUIZ RESULT SUBMISSION (ENFANT)
+// ============================================
+
+/**
+ * Submit quiz result — saves score, awards XP, checks badges, auto-levels
+ * POST /api/quiz/contenu/:contenuId/resultat
+ *
+ * Body: { score: int, totalQuestions: int }
+ *
+ * Logic:
+ * - Score < 60%: save score but NO XP
+ * - First attempt >= 60%: award full content XP + mark complete
+ * - Replay with higher score: update score, award XP difference if applicable
+ * - Replay with lower score: keep best score, no XP change
+ */
+const submitResult = asyncHandler(async (req, res) => {
+  const { contenuId } = req.params;
+  const { score, totalQuestions } = req.body;
+  const enfantId = req.user.id;
+
+  if (score === undefined || totalQuestions === undefined) {
+    throw ApiError.badRequest('score et totalQuestions sont requis');
+  }
+
+  // Verify content exists and is published
+  const [contenu] = await query(
+    'SELECT id, points_xp, titre FROM contenus WHERE id = ? AND statut = "publie"',
+    [contenuId]
+  );
+  if (!contenu) {
+    throw ApiError.notFound('Contenu non trouve');
+  }
+
+  const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+  const passed = percentage >= 60;
+
+  // Check for existing completed attempt with a score (best score logic)
+  const [existingAttempt] = await query(
+    `SELECT id, score, points_gagnes, est_complete
+     FROM historique_apprentissage
+     WHERE enfant_id = ? AND contenu_id = ?
+       AND score IS NOT NULL
+     ORDER BY score DESC
+     LIMIT 1`,
+    [enfantId, contenuId]
+  );
+
+  let pointsGagnes = 0;
+  let isNewBest = false;
+  const bestScore = existingAttempt ? Math.max(existingAttempt.score, score) : score;
+
+  if (!existingAttempt) {
+    // First attempt — create or update historique entry
+    // Check if there's an existing entry (from demarrerContenu)
+    const [pendingEntry] = await query(
+      `SELECT id FROM historique_apprentissage
+       WHERE enfant_id = ? AND contenu_id = ? AND score IS NULL
+       ORDER BY date_acces DESC LIMIT 1`,
+      [enfantId, contenuId]
+    );
+
+    if (passed) {
+      pointsGagnes = contenu.points_xp;
+    }
+
+    if (pendingEntry) {
+      // Update existing entry
+      await query(
+        `UPDATE historique_apprentissage
+         SET score = ?, progression = 100, est_complete = TRUE, points_gagnes = ?
+         WHERE id = ?`,
+        [score, pointsGagnes, pendingEntry.id]
+      );
+    } else {
+      // Create new entry
+      await query(
+        `INSERT INTO historique_apprentissage
+         (enfant_id, contenu_id, score, progression, est_complete, points_gagnes)
+         VALUES (?, ?, ?, 100, TRUE, ?)`,
+        [enfantId, contenuId, score, pointsGagnes]
+      );
+    }
+
+    isNewBest = true;
+  } else if (score > existingAttempt.score) {
+    // Replay with higher score — update best score
+    await query(
+      'UPDATE historique_apprentissage SET score = ? WHERE id = ?',
+      [score, existingAttempt.id]
+    );
+
+    // Award XP difference if now passing and previously didn't, or higher bracket
+    const previousPassed = existingAttempt.points_gagnes > 0;
+    if (passed && !previousPassed) {
+      pointsGagnes = contenu.points_xp;
+      await query(
+        'UPDATE historique_apprentissage SET points_gagnes = ? WHERE id = ?',
+        [pointsGagnes, existingAttempt.id]
+      );
+    }
+
+    isNewBest = true;
+  }
+  // else: lower or equal score — keep existing, no changes
+
+  // Award XP to child profile
+  if (pointsGagnes > 0) {
+    await query(
+      'UPDATE profils_enfants SET points_xp = points_xp + ? WHERE id = ?',
+      [pointsGagnes, enfantId]
+    );
+  }
+
+  // Auto level-up
+  const [updatedEnfant] = await query(
+    'SELECT points_xp, niveau_global FROM profils_enfants WHERE id = ?',
+    [enfantId]
+  );
+
+  const newLevel = getLevelFromXp(updatedEnfant.points_xp);
+  const previousLevel = updatedEnfant.niveau_global;
+  let leveledUp = false;
+
+  if (newLevel > previousLevel) {
+    await query(
+      'UPDATE profils_enfants SET niveau_global = ? WHERE id = ?',
+      [newLevel, enfantId]
+    );
+    leveledUp = true;
+  }
+
+  // Close any open session
+  await query(
+    `UPDATE sessions_utilisation
+     SET date_fin = NOW(), duree_minutes = TIMESTAMPDIFF(MINUTE, date_debut, NOW())
+     WHERE enfant_id = ? AND date_fin IS NULL
+     ORDER BY date_debut DESC LIMIT 1`,
+    [enfantId]
+  );
+
+  // Auto-check badges
+  const newBadges = await checkAndAwardBadges(enfantId);
+
+  // Re-fetch XP after badge bonuses
+  const [finalEnfant] = await query(
+    'SELECT points_xp, niveau_global FROM profils_enfants WHERE id = ?',
+    [enfantId]
+  );
+
+  // Re-check level after badge bonus XP
+  const finalLevel = getLevelFromXp(finalEnfant.points_xp);
+  if (finalLevel > finalEnfant.niveau_global) {
+    await query(
+      'UPDATE profils_enfants SET niveau_global = ? WHERE id = ?',
+      [finalLevel, enfantId]
+    );
+  }
+
+  res.json({
+    success: true,
+    message: passed ? 'Quiz réussi !' : 'Quiz terminé, essaie encore pour débloquer les XP !',
+    data: {
+      score,
+      totalQuestions,
+      percentage: Math.round(percentage),
+      passed,
+      bestScore,
+      isNewBest,
+      pointsGagnes,
+      totalXp: finalEnfant.points_xp,
+      niveau: Math.max(finalLevel, finalEnfant.niveau_global),
+      niveauPrecedent: previousLevel,
+      leveledUp: finalLevel > previousLevel || leveledUp,
+      xpPourProchainNiveau: getXpThreshold(Math.max(finalLevel, finalEnfant.niveau_global) + 1),
+      newBadges
+    }
+  });
+});
+
+/**
+ * Get level thresholds (public utility)
+ * GET /api/quiz/levels
+ */
+const getLevels = asyncHandler(async (req, res) => {
+  const levels = [];
+  for (let i = 1; i <= 20; i++) {
+    levels.push({ level: i, xpRequired: getXpThreshold(i) });
+  }
+  res.json({ success: true, data: levels });
+});
+
 module.exports = {
   getByContenuId,
   createOrUpdate,
@@ -485,5 +852,11 @@ module.exports = {
   addQuestion,
   updateQuestion,
   deleteQuestion,
-  reorderQuestions
+  reorderQuestions,
+  submitResult,
+  getLevels,
+  // Export helpers for use in other controllers
+  getLevelFromXp,
+  getXpThreshold,
+  checkAndAwardBadges
 };

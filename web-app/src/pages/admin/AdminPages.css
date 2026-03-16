@@ -431,6 +431,13 @@
   border-bottom: none;
 }
 
+/* Last column (Actions) shrinks to fit content */
+.data-table th:last-child,
+.data-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .data-table tbody tr {
   transition: var(--admin-transition);
 }

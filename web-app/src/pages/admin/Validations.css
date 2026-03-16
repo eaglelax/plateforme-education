@@ -364,24 +364,24 @@ button.stat-card {
   font-size: 1.1rem;
 }
 
-/* Table */
-.contenus-table {
+/* Table - scoped to .contenus-section to avoid conflicts with GestionContenus */
+.contenus-section .contenus-table {
   overflow-x: auto;
 }
 
-.contenus-table table {
+.contenus-section .contenus-table table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.contenus-table th,
-.contenus-table td {
+.contenus-section .contenus-table th,
+.contenus-section .contenus-table td {
   padding: 1rem 1.25rem;
   text-align: left;
   border-bottom: 1px solid var(--admin-border, #E2E8F0);
 }
 
-.contenus-table th {
+.contenus-section .contenus-table th {
   font-weight: 600;
   color: var(--admin-text-muted, #64748B);
   background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
@@ -390,12 +390,23 @@ button.stat-card {
   letter-spacing: 0.05em;
 }
 
-.contenus-table tbody tr {
+/* Column widths - Validations table (8 columns) */
+.contenus-section .contenus-table th:last-child,
+.contenus-section .contenus-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.contenus-section .contenus-table tbody tr {
   transition: all 0.3s ease;
 }
 
-.contenus-table tbody tr:hover {
+.contenus-section .contenus-table tbody tr:hover {
   background: linear-gradient(90deg, rgba(99, 102, 241, 0.02), transparent);
+}
+
+.contenus-section .contenus-table tbody tr:hover .type-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .title-cell {
@@ -496,10 +507,6 @@ button.stat-card {
   border-radius: var(--admin-radius, 12px);
   font-size: 1.2rem;
   transition: transform 0.3s ease;
-}
-
-.contenus-table tbody tr:hover .type-icon {
-  transform: scale(1.1) rotate(5deg);
 }
 
 .type-icon.video {
@@ -1248,12 +1255,12 @@ button.stat-card {
     font-size: 1.5rem;
   }
 
-  .contenus-table th:nth-child(3),
-  .contenus-table td:nth-child(3),
-  .contenus-table th:nth-child(4),
-  .contenus-table td:nth-child(4),
-  .contenus-table th:nth-child(5),
-  .contenus-table td:nth-child(5) {
+  .contenus-section .contenus-table th:nth-child(3),
+  .contenus-section .contenus-table td:nth-child(3),
+  .contenus-section .contenus-table th:nth-child(4),
+  .contenus-section .contenus-table td:nth-child(4),
+  .contenus-section .contenus-table th:nth-child(5),
+  .contenus-section .contenus-table td:nth-child(5) {
     display: none;
   }
 

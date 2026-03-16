@@ -26,6 +26,20 @@ router.get('/mon-historique', enfantOnly, historiqueController.getMonHistorique)
  */
 router.get('/mes-badges', enfantOnly, historiqueController.getMesBadges);
 
+/**
+ * @route   GET /api/historique/mes-stats
+ * @desc    Obtenir ses statistiques globales (enfant)
+ * @access  Enfant
+ */
+router.get('/mes-stats', enfantOnly, historiqueController.getMesStats);
+
+/**
+ * @route   POST /api/historique/sync-game-xp
+ * @desc    Synchroniser les XP des jeux vers le profil
+ * @access  Enfant
+ */
+router.post('/sync-game-xp', enfantOnly, historiqueController.syncGameXp);
+
 // ============================================
 // ROUTES PARENT
 // ============================================

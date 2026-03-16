@@ -18,6 +18,7 @@ const historiqueRoutes = require('./historique.routes');
 const adminRoutes = require('./admin.routes');
 const uploadRoutes = require('./upload.routes');
 const quizRoutes = require('./quiz.routes');
+const streamRoutes = require('./stream.routes');
 
 // Montage des routes
 router.use('/auth', authRoutes);
@@ -36,5 +37,6 @@ router.use('/historique', historiqueRoutes);
 router.use('/admin', adminRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/quiz', quizRoutes);
+router.use('/stream', streamRoutes);
 
 module.exports = router;

@@ -96,15 +96,8 @@ const getAll = asyncHandler(async (req, res) => {
     params.push(searchTerm, searchTerm);
   }
 
-  if (req.user && req.user.type === 'enfant') {
-    whereClause += ` AND c.domaine_id IN (
-      SELECT domaine_id FROM profils_domaines_autorises
-      WHERE enfant_id = ? AND est_autorise = TRUE
-    )`;
-    params.push(req.user.id);
-    whereClause += ' AND c.tranche_age_min <= ? AND c.tranche_age_max >= ?';
-    params.push(req.user.age, req.user.age);
-  }
+  // Note: Filtrage par domaines autorises et par age desactive pour MVP
+  // Tous les contenus publies sont accessibles aux enfants
 
   const [countResult] = await query(
     `SELECT COUNT(*) as total FROM contenus c WHERE ${whereClause}`,
@@ -125,7 +118,11 @@ const getAll = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: contenus,
+    data: contenus.map(c => ({
+      ...c,
+      url_media: c.url_media ? c.url_media.replace('/uploads/', '/api/stream/') : null,
+      url_miniature: c.url_miniature ? c.url_miniature.replace('/uploads/', '/api/stream/') : null
+    })),
     pagination: paginationMeta(countResult.total, page, limit)
   });
 });
@@ -185,7 +182,11 @@ const getAllAdmin = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: contenus,
+    data: contenus.map(c => ({
+      ...c,
+      url_media: c.url_media ? c.url_media.replace('/uploads/', '/api/stream/') : null,
+      url_miniature: c.url_miniature ? c.url_miniature.replace('/uploads/', '/api/stream/') : null
+    })),
     pagination: paginationMeta(countResult.total, page, limit)
   });
 });
@@ -248,8 +249,12 @@ const getById = asyncHandler(async (req, res) => {
     success: true,
     data: {
       ...contenu,
-      urlMedia: contenu.media_path ? `/uploads/${contenu.media_path}` : contenu.url_media,
-      urlMiniature: contenu.miniature_path ? `/uploads/${contenu.miniature_path}` : contenu.url_miniature,
+      urlMedia: contenu.media_path
+        ? `/api/stream/${contenu.media_path}`
+        : (contenu.url_media ? contenu.url_media.replace('/uploads/', '/api/stream/') : null),
+      urlMiniature: contenu.miniature_path
+        ? `/api/stream/${contenu.miniature_path}`
+        : (contenu.url_miniature ? contenu.url_miniature.replace('/uploads/', '/api/stream/') : null),
       quiz
     }
   });
@@ -639,8 +644,8 @@ const getAValider = asyncHandler(async (req, res) => {
     data: contenus.map(c => ({
       ...c,
       createurNom: `${c.createur_prenom} ${c.createur_nom}`,
-      urlMedia: c.media_path ? `/uploads/${c.media_path}` : c.url_media,
-      urlMiniature: c.miniature_path ? `/uploads/${c.miniature_path}` : c.url_miniature
+      urlMedia: c.media_path ? `/api/stream/${c.media_path}` : c.url_media,
+      urlMiniature: c.miniature_path ? `/api/stream/${c.miniature_path}` : c.url_miniature
     })),
     pagination: paginationMeta(countResult.total, page, limit)
   });
@@ -709,8 +714,8 @@ const getForValidation = asyncHandler(async (req, res) => {
     success: true,
     data: {
       ...contenu,
-      urlMedia: contenu.media_path ? `/uploads/${contenu.media_path}` : contenu.url_media,
-      urlMiniature: contenu.miniature_path ? `/uploads/${contenu.miniature_path}` : contenu.url_miniature,
+      urlMedia: contenu.media_path ? `/api/stream/${contenu.media_path}` : contenu.url_media,
+      urlMiniature: contenu.miniature_path ? `/api/stream/${contenu.miniature_path}` : contenu.url_miniature,
       createur: {
         id: contenu.createur_id,
         nom: contenu.createur_nom,

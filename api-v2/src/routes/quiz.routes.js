@@ -59,6 +59,32 @@ router.delete('/contenu/:contenuId',
 );
 
 // ============================================
+// ROUTES ENFANT — QUIZ RESULT
+// ============================================
+
+/**
+ * @route   POST /api/quiz/contenu/:contenuId/resultat
+ * @desc    Submit quiz result (score, XP, badges, level-up)
+ * @access  Enfant (authenticated)
+ */
+router.post('/contenu/:contenuId/resultat',
+  [
+    param('contenuId').isInt().withMessage('ID contenu invalide'),
+    body('score').isInt({ min: 0 }).withMessage('Score invalide'),
+    body('totalQuestions').isInt({ min: 1 }).withMessage('Nombre de questions invalide')
+  ],
+  validate,
+  quizController.submitResult
+);
+
+/**
+ * @route   GET /api/quiz/levels
+ * @desc    Get level thresholds
+ * @access  Authenticated
+ */
+router.get('/levels', quizController.getLevels);
+
+// ============================================
 // ROUTES QUESTIONS
 // ============================================
 

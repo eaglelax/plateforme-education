@@ -25,10 +25,17 @@ const TYPE_ICONS = {
   activite: FiFile,
 };
 
-// URL de base pour les fichiers statiques (uploads) - sans /api
-const getBaseUrl = () => {
+// Construire l'URL complète pour les fichiers media
+// Sur LWS, les fichiers passent par ?route=/api/stream/...
+const getMediaUrl = (relativePath) => {
+  if (!relativePath) return '';
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  return apiUrl.replace(/\/api\/?$/, '');
+  const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+  const isLWS = apiUrl.includes('apieducative.genius-universe.com');
+  if (isLWS && relativePath.startsWith('/api/')) {
+    return `${baseUrl}?route=${relativePath}`;
+  }
+  return `${baseUrl}${relativePath}`;
 };
 
 function Validations() {
@@ -422,7 +429,7 @@ function Validations() {
                           <h4>Miniature</h4>
                           <div className="miniature-container">
                             <img
-                              src={`${getBaseUrl()}${contenuDetail.urlMiniature}`}
+                              src={`${getMediaUrl(contenuDetail.urlMiniature)}`}
                               alt={`Miniature de ${contenuDetail.titre}`}
                               className="miniature-image"
                               onError={(e) => {
@@ -449,12 +456,10 @@ function Validations() {
                               <video
                                 controls
                                 className="video-player"
-                                poster={contenuDetail.urlMiniature ? `${getBaseUrl()}${contenuDetail.urlMiniature}` : undefined}
+                                src={getMediaUrl(contenuDetail.urlMedia)}
+                                poster={contenuDetail.urlMiniature ? getMediaUrl(contenuDetail.urlMiniature) : undefined}
+                                crossOrigin="anonymous"
                               >
-                                <source
-                                  src={`${getBaseUrl()}${contenuDetail.urlMedia}`}
-                                  type="video/mp4"
-                                />
                                 Votre navigateur ne supporte pas la lecture video.
                               </video>
                             </div>
@@ -466,7 +471,7 @@ function Validations() {
                               <div className="audio-visual">
                                 {contenuDetail.urlMiniature ? (
                                   <img
-                                    src={`${getBaseUrl()}${contenuDetail.urlMiniature}`}
+                                    src={`${getMediaUrl(contenuDetail.urlMiniature)}`}
                                     alt="Couverture audio"
                                     className="audio-cover"
                                   />
@@ -481,7 +486,7 @@ function Validations() {
                                 className="audio-player"
                               >
                                 <source
-                                  src={`${getBaseUrl()}${contenuDetail.urlMedia}`}
+                                  src={`${getMediaUrl(contenuDetail.urlMedia)}`}
                                   type="audio/mpeg"
                                 />
                                 Votre navigateur ne supporte pas la lecture audio.
@@ -494,7 +499,7 @@ function Validations() {
                             <div className="document-viewer-container">
                               {contenuDetail.urlMedia.toLowerCase().endsWith('.pdf') ? (
                                 <iframe
-                                  src={`${getBaseUrl()}${contenuDetail.urlMedia}`}
+                                  src={`${getMediaUrl(contenuDetail.urlMedia)}`}
                                   className="pdf-viewer"
                                   title="Document PDF"
                                 />
@@ -503,7 +508,7 @@ function Validations() {
                                   <FiFileText size={48} />
                                   <p>Document disponible</p>
                                   <a
-                                    href={`${getBaseUrl()}${contenuDetail.urlMedia}`}
+                                    href={`${getMediaUrl(contenuDetail.urlMedia)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn btn-primary"
@@ -518,7 +523,7 @@ function Validations() {
                           {/* Autres types - lien generique */}
                           {!['video', 'audio', 'document'].includes(contenuDetail.type) && (
                             <a
-                              href={`${getBaseUrl()}${contenuDetail.urlMedia}`}
+                              href={`${getMediaUrl(contenuDetail.urlMedia)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="media-link"
