@@ -13,6 +13,9 @@ import {
   FiCreditCard,
   FiPackage,
   FiFolder,
+  FiGrid,
+  FiFileText,
+  FiBell,
 } from 'react-icons/fi';
 import { useState } from 'react';
 import useAdminAuthStore from '../../stores/adminAuthStore';
@@ -144,6 +147,17 @@ function AdminLayout() {
               </Link>
             )}
 
+            {/* Domaines - Admin uniquement */}
+            {hasAdminRole && (
+              <Link
+                to="/admin/domaines"
+                className={`admin-nav-link ${isActive('/admin/domaines') ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                <FiGrid /> <span>Domaines</span>
+              </Link>
+            )}
+
             {/* Statistiques - Admin uniquement */}
             {canViewStats && (
               <Link
@@ -152,6 +166,28 @@ function AdminLayout() {
                 onClick={() => setMenuOpen(false)}
               >
                 <FiPieChart /> <span>Statistiques</span>
+              </Link>
+            )}
+
+            {/* Notifications - Admin uniquement */}
+            {hasAdminRole && (
+              <Link
+                to="/admin/notifications"
+                className={`admin-nav-link ${isActive('/admin/notifications') ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                <FiBell /> <span>Notifications</span>
+              </Link>
+            )}
+
+            {/* Journal d'audit - Admin uniquement */}
+            {hasAdminRole && (
+              <Link
+                to="/admin/journal"
+                className={`admin-nav-link ${isActive('/admin/journal') ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                <FiFileText /> <span>Journal</span>
               </Link>
             )}
           </div>

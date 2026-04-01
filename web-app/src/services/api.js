@@ -158,6 +158,7 @@ export const uploadService = {
     formData.append('media', file);
     return api.post('/uploads/media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 2700000, // 45 minutes pour les gros fichiers
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -172,6 +173,7 @@ export const uploadService = {
     formData.append('miniature', file);
     return api.post('/uploads/miniature', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 2700000, // 45 minutes
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -186,6 +188,7 @@ export const uploadService = {
     formData.append('image', file);
     return api.post('/uploads/question-image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000, // 5 minutes
     });
   },
   // Obtenir les infos d'un fichier uploadé
@@ -277,7 +280,7 @@ export const paiementService = {
 // ============================================
 export const adminService = {
   // Dashboard
-  getDashboard: () => api.get('/admin/dashboard'),
+  getDashboard: (periode) => api.get('/admin/dashboard', { params: { periode } }),
   // Statistiques
   getStats: (type) => api.get(`/admin/statistiques/${type}`),
   // Utilisateurs
@@ -289,6 +292,8 @@ export const adminService = {
   changeRole: (id, roleId) => api.put(`/utilisateurs/${id}/role`, { roleId }),
   // Roles
   getRoles: () => api.get('/admin/roles'),
+  // Journal d'audit
+  getJournal: (params) => api.get('/admin/journal', { params }),
 };
 
 // ============================================

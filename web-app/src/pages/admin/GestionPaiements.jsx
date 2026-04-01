@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FiCreditCard, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
+import { FiCreditCard, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiClock, FiXCircle, FiX, FiUser, FiHash, FiRotateCcw, FiCheck } from 'react-icons/fi';
 import { paiementService } from '../../services/api';
+import api from '../../services/api';
 import './AdminPages.css';
 import './GestionPaiements.css';
 
@@ -10,6 +11,8 @@ function GestionPaiements() {
   const [error, setError] = useState('');
   const [filterStatut, setFilterStatut] = useState('');
   const [pagination, setPagination] = useState({ page: 1, total: 0, limit: 20 });
+  const [selectedPaiement, setSelectedPaiement] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchPaiements();
@@ -79,6 +82,21 @@ function GestionPaiements() {
     return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
   };
 
+  const [success, setSuccess] = useState('');
+
+  const handleRembourser = async (id) => {
+    if (!confirm('Confirmer le remboursement de ce paiement ?')) return;
+    try {
+      await api.post(`/paiements/${id}/rembourser`);
+      setSuccess('Paiement rembourse avec succes');
+      setShowModal(false);
+      fetchPaiements();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors du remboursement');
+    }
+  };
+
   // Calcul des statistiques
   const stats = {
     total: paiements.reduce((sum, p) => p.statut === 'complete' ? sum + (p.montant || 0) : sum, 0),
@@ -114,7 +132,11 @@ function GestionPaiements() {
         <div className="error-alert">
           <FiAlertCircle />
           <span>{error}</span>
+          <button onClick={() => setError('')}>&times;</button>
         </div>
+      )}
+      {success && (
+        <div className="success-alert"><FiCheck /><span>{success}</span></div>
       )}
 
       {/* Stats rapides */}
@@ -196,7 +218,7 @@ function GestionPaiements() {
                   </td>
                   <td>{formatDate(paiement.date_creation)}</td>
                   <td className="actions-cell">
-                    <button className="btn-icon" title="Voir details">
+                    <button className="btn-icon" title="Voir details" onClick={() => { setSelectedPaiement(paiement); setShowModal(true); }}>
                       <FiEye />
                     </button>
                   </td>
@@ -222,6 +244,87 @@ function GestionPaiements() {
           >
             Suivant
           </button>
+        </div>
+      )}
+      {/* Modal Detail Paiement */}
+      {showModal && selectedPaiement && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detail du paiement</h3>
+              <button className="modal-close" onClick={() => setShowModal(false)}><FiX /></button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <FiHash className="detail-icon" />
+                  <div>
+                    <label>Reference</label>
+                    <span><code>{selectedPaiement.reference || `PAY-${selectedPaiement.id}`}</code></span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiUser className="detail-icon" />
+                  <div>
+                    <label>Utilisateur</label>
+                    <span>{selectedPaiement.utilisateur_nom || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiCreditCard className="detail-icon" />
+                  <div>
+                    <label>Montant</label>
+                    <span className="amount">{formatPrice(selectedPaiement.montant)}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div>
+                    <label>Methode de paiement</label>
+                    {getMethodeBadge(selectedPaiement.methode)}
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div>
+                    <label>Statut</label>
+                    <div className="status-with-icon">
+                      {getStatusIcon(selectedPaiement.statut)}
+                      {getStatusBadge(selectedPaiement.statut)}
+                    </div>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div>
+                    <label>Date</label>
+                    <span>{formatDate(selectedPaiement.date_creation)}</span>
+                  </div>
+                </div>
+                {selectedPaiement.telephone && (
+                  <div className="detail-item">
+                    <div>
+                      <label>Telephone</label>
+                      <span>{selectedPaiement.telephone}</span>
+                    </div>
+                  </div>
+                )}
+                {selectedPaiement.transaction_id && (
+                  <div className="detail-item">
+                    <div>
+                      <label>ID Transaction</label>
+                      <span><code>{selectedPaiement.transaction_id}</code></span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Fermer</button>
+              {selectedPaiement.statut === 'complete' && (
+                <button className="btn btn-danger" onClick={() => handleRembourser(selectedPaiement.id)}>
+                  <FiRotateCcw /> Rembourser
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

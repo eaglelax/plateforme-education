@@ -35,6 +35,9 @@ import GestionUtilisateurs from './pages/admin/GestionUtilisateurs';
 import GestionAbonnements from './pages/admin/GestionAbonnements';
 import GestionPaiements from './pages/admin/GestionPaiements';
 import Statistiques from './pages/admin/Statistiques';
+import GestionDomaines from './pages/admin/GestionDomaines';
+import JournalAudit from './pages/admin/JournalAudit';
+import AdminNotifications from './pages/admin/AdminNotifications';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +100,9 @@ function App() {
               <Route path="abonnements" element={<GestionAbonnements />} />
               <Route path="paiements" element={<GestionPaiements />} />
               <Route path="statistiques" element={<Statistiques />} />
+              <Route path="domaines" element={<GestionDomaines />} />
+              <Route path="journal" element={<JournalAudit />} />
+              <Route path="notifications" element={<AdminNotifications />} />
             </Route>
 
             {/* Fallback */}

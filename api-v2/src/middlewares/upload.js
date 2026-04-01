@@ -15,8 +15,8 @@ const UPLOAD_CONFIG = {
   audio: {
     mimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a'],
     extensions: ['.mp3', '.wav', '.ogg', '.m4a'],
-    maxSize: 100 * 1024 * 1024, // 100 Mo
-    maxSizeMo: 100
+    maxSize: 200 * 1024 * 1024, // 200 Mo
+    maxSizeMo: 200
   },
   document: {
     mimeTypes: [
@@ -27,20 +27,20 @@ const UPLOAD_CONFIG = {
       'application/vnd.ms-powerpoint'
     ],
     extensions: ['.pdf', '.docx', '.pptx', '.doc', '.ppt'],
-    maxSize: 50 * 1024 * 1024, // 50 Mo
-    maxSizeMo: 50
+    maxSize: 200 * 1024 * 1024, // 200 Mo
+    maxSizeMo: 200
   },
   image: {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
     extensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif'],
-    maxSize: 10 * 1024 * 1024, // 10 Mo
-    maxSizeMo: 10
+    maxSize: 200 * 1024 * 1024, // 200 Mo
+    maxSizeMo: 200
   },
   miniature: {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
     extensions: ['.jpg', '.jpeg', '.png', '.webp'],
-    maxSize: 5 * 1024 * 1024, // 5 Mo
-    maxSizeMo: 5
+    maxSize: 200 * 1024 * 1024, // 200 Mo
+    maxSizeMo: 200
   }
 };
 

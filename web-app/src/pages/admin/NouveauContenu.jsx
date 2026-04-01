@@ -16,6 +16,8 @@ import {
   FiSend,
   FiFile,
   FiAlertCircle,
+  FiArrowUp,
+  FiArrowDown,
 } from 'react-icons/fi';
 import { contenuService, uploadService, quizService, gestionContenuService } from '../../services/api';
 import './NouveauContenu.css';
@@ -213,7 +215,15 @@ function NouveauContenu() {
       setMediaPreview(data.urlTemporaire);
       setUploadProgress(100);
     } catch (error) {
-      setGlobalError(error.response?.data?.message || 'Erreur lors de l\'upload du fichier');
+      let msg = 'Erreur lors de l\'upload du fichier';
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        msg = `Timeout: le fichier est trop gros ou la connexion trop lente (${Math.round(file.size / 1024 / 1024)} Mo)`;
+      } else if (error.response?.data?.message) {
+        msg = error.response.data.message;
+      } else if (error.message) {
+        msg = `Erreur: ${error.message}`;
+      }
+      setGlobalError(msg);
       setMediaFile(null);
     } finally {
       setUploading(false);
@@ -334,6 +344,16 @@ function NouveauContenu() {
           : q
       ),
     }));
+  };
+
+  const moveQuestion = (index, direction) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= quiz.questions.length) return;
+    setQuiz(prev => {
+      const newQuestions = [...prev.questions];
+      [newQuestions[index], newQuestions[newIndex]] = [newQuestions[newIndex], newQuestions[index]];
+      return { ...prev, questions: newQuestions };
+    });
   };
 
   const toggleCorrectAnswer = (questionIndex, reponseIndex) => {
@@ -721,6 +741,9 @@ function NouveauContenu() {
                       <p>Glissez-deposez votre fichier ici</p>
                       <span>ou cliquez pour parcourir</span>
                       <span className="accepted-formats">Formats acceptes: {typeConfig?.accept}</span>
+                      <span className="size-limit">
+                        Taille maximale: {formData.type === 'video' ? '500 Mo' : '200 Mo'}
+                      </span>
                     </>
                   )}
                 </div>
@@ -759,7 +782,8 @@ function NouveauContenu() {
                   <>
                     <FiImage size={32} />
                     <p>Ajouter une miniature</p>
-                    <span>JPG, PNG, WEBP (max 5 Mo)</span>
+                    <span>JPG, PNG, WEBP</span>
+                    <span className="size-limit">Taille maximale: 200 Mo</span>
                   </>
                 )}
               </div>
@@ -878,6 +902,12 @@ function NouveauContenu() {
                           min={1}
                           title="Points"
                         />
+                        <button type="button" className="btn-icon" title="Monter" onClick={() => moveQuestion(qIndex, -1)} disabled={qIndex === 0}>
+                          <FiArrowUp />
+                        </button>
+                        <button type="button" className="btn-icon" title="Descendre" onClick={() => moveQuestion(qIndex, 1)} disabled={qIndex === quiz.questions.length - 1}>
+                          <FiArrowDown />
+                        </button>
                         <button
                           type="button"
                           className="btn-remove-question"

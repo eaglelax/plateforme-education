@@ -14,7 +14,15 @@ app.use(cors({
 }));
 
 // Middleware JSON
-app.use(express.json());
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ extended: true, limit: '200mb' }));
+
+// Timeout etendu pour les uploads (10 minutes)
+app.use('/api/uploads', (req, res, next) => {
+  req.setTimeout(2700000);
+  res.setTimeout(2700000);
+  next();
+});
 
 // Servir les fichiers statiques (uploads: media, miniatures)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

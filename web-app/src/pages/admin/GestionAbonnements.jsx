@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FiPackage, FiSearch, FiEye, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
+import { FiPackage, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiX, FiUser, FiCalendar, FiCreditCard, FiPlus, FiEdit2, FiCheck } from 'react-icons/fi';
 import { abonnementService } from '../../services/api';
+import api from '../../services/api';
 import './AdminPages.css';
 import './GestionAbonnements.css';
 
@@ -9,8 +10,14 @@ function GestionAbonnements() {
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [filterStatut, setFilterStatut] = useState('');
   const [pagination, setPagination] = useState({ page: 1, total: 0, limit: 20 });
+  const [selectedAbo, setSelectedAbo] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showTypeForm, setShowTypeForm] = useState(false);
+  const [editTypeId, setEditTypeId] = useState(null);
+  const [typeForm, setTypeForm] = useState({ nom: '', description: '', prix: '', duree_jours: '', nombre_appareils: 1, telechargement: false, contenu_premium: false });
 
   useEffect(() => {
     fetchData();
@@ -38,6 +45,46 @@ function GestionAbonnements() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTypeSubmit = async (e) => {
+    e.preventDefault();
+    if (!typeForm.nom.trim() || !typeForm.prix || !typeForm.duree_jours) {
+      setError('Nom, prix et duree sont requis'); return;
+    }
+    try {
+      const payload = { ...typeForm, prix: parseInt(typeForm.prix), duree_jours: parseInt(typeForm.duree_jours), nombre_appareils: parseInt(typeForm.nombre_appareils) };
+      if (editTypeId) {
+        await api.put(`/abonnements/types/${editTypeId}`, payload);
+        setSuccess('Type modifie avec succes');
+      } else {
+        await api.post('/abonnements/types', payload);
+        setSuccess('Type cree avec succes');
+      }
+      resetTypeForm();
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde');
+    }
+  };
+
+  const editType = (type) => {
+    setEditTypeId(type.id);
+    setTypeForm({
+      nom: type.nom || '', description: type.description || '',
+      prix: type.prix || '', duree_jours: type.duree_jours || '',
+      nombre_appareils: type.nombre_appareils || 1,
+      telechargement: type.telechargement || false,
+      contenu_premium: type.contenu_premium || false,
+    });
+    setShowTypeForm(true);
+  };
+
+  const resetTypeForm = () => {
+    setEditTypeId(null);
+    setTypeForm({ nom: '', description: '', prix: '', duree_jours: '', nombre_appareils: 1, telechargement: false, contenu_premium: false });
+    setShowTypeForm(false);
   };
 
   const getStatusBadge = (statut) => {
@@ -89,18 +136,77 @@ function GestionAbonnements() {
         <div className="error-alert">
           <FiAlertCircle />
           <span>{error}</span>
+          <button onClick={() => setError('')}>&times;</button>
         </div>
+      )}
+      {success && (
+        <div className="success-alert"><FiCheck /><span>{success}</span></div>
       )}
 
       {/* Types d'abonnements */}
       <div className="types-overview">
-        <h3>Types d'abonnements disponibles</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0 }}>Types d'abonnements</h3>
+          <button className="btn btn-primary btn-sm" onClick={() => { resetTypeForm(); setShowTypeForm(true); }}>
+            <FiPlus /> Nouveau type
+          </button>
+        </div>
+
+        {showTypeForm && (
+          <div className="form-card" style={{ marginBottom: '1rem' }}>
+            <h3>{editTypeId ? 'Modifier le type' : 'Nouveau type d\'abonnement'}</h3>
+            <form onSubmit={handleTypeSubmit}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Nom *</label>
+                  <input type="text" className="form-input" value={typeForm.nom} onChange={(e) => setTypeForm(p => ({ ...p, nom: e.target.value }))} placeholder="Ex: Premium Mensuel" />
+                </div>
+                <div className="form-group">
+                  <label>Prix (FCFA) *</label>
+                  <input type="number" className="form-input" value={typeForm.prix} onChange={(e) => setTypeForm(p => ({ ...p, prix: e.target.value }))} placeholder="5000" min="0" />
+                </div>
+                <div className="form-group">
+                  <label>Duree (jours) *</label>
+                  <input type="number" className="form-input" value={typeForm.duree_jours} onChange={(e) => setTypeForm(p => ({ ...p, duree_jours: e.target.value }))} placeholder="30" min="1" />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Description</label>
+                  <input type="text" className="form-input" value={typeForm.description} onChange={(e) => setTypeForm(p => ({ ...p, description: e.target.value }))} placeholder="Description du plan" />
+                </div>
+                <div className="form-group">
+                  <label>Appareils max</label>
+                  <input type="number" className="form-input" value={typeForm.nombre_appareils} onChange={(e) => setTypeForm(p => ({ ...p, nombre_appareils: e.target.value }))} min="1" max="10" />
+                </div>
+              </div>
+              <div className="form-row checkboxes" style={{ marginBottom: '1rem' }}>
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={typeForm.telechargement} onChange={(e) => setTypeForm(p => ({ ...p, telechargement: e.target.checked }))} />
+                  <span>Telechargement hors ligne</span>
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={typeForm.contenu_premium} onChange={(e) => setTypeForm(p => ({ ...p, contenu_premium: e.target.checked }))} />
+                  <span>Acces contenu premium</span>
+                </label>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn btn-secondary" onClick={resetTypeForm}><FiX /> Annuler</button>
+                <button type="submit" className="btn btn-primary"><FiCheck /> {editTypeId ? 'Modifier' : 'Creer'}</button>
+              </div>
+            </form>
+          </div>
+        )}
+
         <div className="types-grid">
           {types.map((type) => (
             <div key={type.id} className="type-card">
               <h4>{type.nom}</h4>
               <p className="price">{formatPrice(type.prix)}</p>
               <p className="duration">{type.duree_jours} jours</p>
+              <button className="btn-icon" title="Modifier" onClick={() => editType(type)} style={{ position: 'absolute', top: 8, right: 8 }}>
+                <FiEdit2 />
+              </button>
             </div>
           ))}
         </div>
@@ -162,7 +268,7 @@ function GestionAbonnements() {
                     </span>
                   </td>
                   <td className="actions-cell">
-                    <button className="btn-icon" title="Voir details">
+                    <button className="btn-icon" title="Voir details" onClick={() => { setSelectedAbo(abo); setShowModal(true); }}>
                       <FiEye />
                     </button>
                   </td>
@@ -188,6 +294,75 @@ function GestionAbonnements() {
           >
             Suivant
           </button>
+        </div>
+      )}
+      {/* Modal Detail Abonnement */}
+      {showModal && selectedAbo && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detail de l'abonnement</h3>
+              <button className="modal-close" onClick={() => setShowModal(false)}><FiX /></button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <FiUser className="detail-icon" />
+                  <div>
+                    <label>Enfant</label>
+                    <span>{selectedAbo.enfant_nom || selectedAbo.nom_pseudo || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiPackage className="detail-icon" />
+                  <div>
+                    <label>Type d'abonnement</label>
+                    <span>{selectedAbo.type_nom || selectedAbo.type_abonnement}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiCalendar className="detail-icon" />
+                  <div>
+                    <label>Date de debut</label>
+                    <span>{formatDate(selectedAbo.date_debut)}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiCalendar className="detail-icon" />
+                  <div>
+                    <label>Date de fin</label>
+                    <span>{formatDate(selectedAbo.date_fin)}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div>
+                    <label>Statut</label>
+                    {getStatusBadge(selectedAbo.statut)}
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div>
+                    <label>Renouvellement automatique</label>
+                    <span className={selectedAbo.renouvellement_auto ? 'text-success' : 'text-muted'}>
+                      {selectedAbo.renouvellement_auto ? 'Actif' : 'Desactive'}
+                    </span>
+                  </div>
+                </div>
+                {selectedAbo.montant && (
+                  <div className="detail-item">
+                    <FiCreditCard className="detail-icon" />
+                    <div>
+                      <label>Montant</label>
+                      <span>{formatPrice(selectedAbo.montant)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Fermer</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
