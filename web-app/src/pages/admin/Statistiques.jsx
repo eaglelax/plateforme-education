@@ -26,7 +26,39 @@ function Statistiques() {
         adminService.getStats('abonnements'),
         adminService.getStats('revenus'),
       ]);
-      setStats(dashRes.status === 'fulfilled' ? dashRes.value.data?.data : null);
+      // Normalize: API returns data.compteurs.xxx, map to flat stats.xxx
+      const raw = dashRes.status === 'fulfilled' ? dashRes.value.data?.data : null;
+      const c = raw?.compteurs || {};
+      const normalized = raw ? {
+        utilisateurs: {
+          total: c.utilisateurs?.total || 0,
+          parents: c.utilisateurs?.total ? c.utilisateurs.total - (c.enfants?.total || 0) : 0,
+          enfants: c.enfants?.total || 0,
+        },
+        contenus: {
+          total: c.contenus?.total || 0,
+          publies: c.contenus?.publies || 0,
+          en_attente: c.contenus?.total - (c.contenus?.publies || 0) - (c.contenus?.brouillons || 0) || 0,
+        },
+        abonnements: {
+          actifs: c.abonnements?.actifs || 0,
+          total: c.abonnements?.total || 0,
+          expires: c.abonnements?.expires || 0,
+        },
+        revenus: {
+          total: parseFloat(c.revenus?.total) || 0,
+          mois: parseFloat(c.revenus?.moisEnCours) || 0,
+        },
+        activite: {
+          inscriptions_recentes: raw.activiteRecente?.reduce((s, a) => s + (a.inscriptions || 0), 0) || 0,
+          abonnements_recents: 0,
+          contenus_termines: 0,
+          sessions_actives: 0,
+        },
+        contenus_par_domaine: raw.contenusParDomaine || null,
+        abonnements_par_type: raw.abonnementsParType || null,
+      } : null;
+      setStats(normalized);
       setDetailedStats({
         utilisateurs: usersRes.status === 'fulfilled' ? usersRes.value.data?.data : null,
         contenus: contenusRes.status === 'fulfilled' ? contenusRes.value.data?.data : null,

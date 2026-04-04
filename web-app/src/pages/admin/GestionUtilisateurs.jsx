@@ -176,10 +176,11 @@ function GestionUtilisateurs() {
   };
 
   // Create user
+  const [createError, setCreateError] = useState('');
   const handleCreate = async (e) => {
     e.preventDefault();
     setModalLoading(true);
-    setError('');
+    setCreateError('');
     try {
       await adminService.createUtilisateur(createForm);
       setSuccess('Compte cree avec succes');
@@ -188,7 +189,7 @@ function GestionUtilisateurs() {
       fetchUtilisateurs();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de la creation');
+      setCreateError(err.response?.data?.message || 'Erreur lors de la creation');
     } finally {
       setModalLoading(false);
     }
@@ -517,6 +518,13 @@ function GestionUtilisateurs() {
             </div>
             <form onSubmit={handleCreate}>
               <div className="modal-body">
+                {createError && (
+                  <div className="error-alert" style={{ marginBottom: '1rem' }}>
+                    <FiAlertCircle />
+                    <span>{createError}</span>
+                    <button onClick={() => setCreateError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>&times;</button>
+                  </div>
+                )}
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Prenom *</label>

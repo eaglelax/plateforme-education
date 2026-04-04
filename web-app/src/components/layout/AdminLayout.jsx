@@ -86,16 +86,8 @@ function AdminLayout() {
                 </Link>
 
                 <Link
-                  to="/admin/contenus/nouveau"
-                  className={`admin-nav-link ${isActive('/admin/contenus/nouveau') ? 'active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FiPlusCircle /> <span>Ajouter</span>
-                </Link>
-
-                <Link
                   to="/admin/mes-contenus"
-                  className={`admin-nav-link ${isActive('/admin/mes-contenus') ? 'active' : ''}`}
+                  className={`admin-nav-link ${isActive('/admin/mes-contenus') || isActive('/admin/contenus/nouveau') ? 'active' : ''}`}
                   onClick={() => setMenuOpen(false)}
                 >
                   <FiFolder /> <span>Mes Contenus</span>
@@ -169,26 +161,26 @@ function AdminLayout() {
               </Link>
             )}
 
-            {/* Notifications - Admin uniquement */}
+            {/* Notifications + Journal - Admin uniquement */}
             {hasAdminRole && (
-              <Link
-                to="/admin/notifications"
-                className={`admin-nav-link ${isActive('/admin/notifications') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiBell /> <span>Notifications</span>
-              </Link>
-            )}
-
-            {/* Journal d'audit - Admin uniquement */}
-            {hasAdminRole && (
-              <Link
-                to="/admin/journal"
-                className={`admin-nav-link ${isActive('/admin/journal') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiFileText /> <span>Journal</span>
-              </Link>
+              <>
+                <Link
+                  to="/admin/notifications"
+                  className={`admin-nav-link ${isActive('/admin/notifications') ? 'active' : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                  title="Notifications"
+                >
+                  <FiBell /> <span>Notifs</span>
+                </Link>
+                <Link
+                  to="/admin/journal"
+                  className={`admin-nav-link ${isActive('/admin/journal') ? 'active' : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                  title="Journal d'audit"
+                >
+                  <FiFileText /> <span>Journal</span>
+                </Link>
+              </>
             )}
           </div>
 
