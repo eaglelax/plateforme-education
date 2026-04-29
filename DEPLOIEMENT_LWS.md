@@ -47,10 +47,10 @@ PORT=3000
 NODE_ENV=production
 
 # Base de donnees MySQL LWS
-DATABASE_URL="mysql://c2180186c_education:xDxwdCmr]I6L}9=@localhost:3306/c2180186c_education"
+DATABASE_URL="mysql://<DB_USER>:<DB_PASSWORD>@localhost:3306/<DB_NAME>"
 
 # JWT Secret
-JWT_SECRET=PlateformeEducativeBF2024$Sec@JwtK3y!#XmL9pQr
+JWT_SECRET=<GENERER_64_CARACTERES_ALEATOIRES>
 JWT_EXPIRES_IN=7d
 JWT_REFRESH_EXPIRES_IN=30d
 

@@ -42,6 +42,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude Code local settings (contains permissions with hardcoded secrets/tokens)
+.claude/settings.local.json
+
 # Misc
 nul
 "image copy*.png"

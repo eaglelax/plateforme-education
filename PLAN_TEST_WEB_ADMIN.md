@@ -6,13 +6,14 @@
 
 ## Comptes de test
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Admin | admin@fasoyiri.bf | Admin2026! |
-| Gestionnaire | gestionnaire@fasoyiri.bf | Gestionnaire2026! |
-| Validateur | validateur@fasoyiri.bf | Validateur2026! |
+| Rôle | Email |
+|---|---|
+| Admin | admin@plateforme-educative.bf |
+| Gestionnaire | gestionnaire@plateforme-educative.bf |
+| Validateur | validateur@plateforme-educative.bf |
 
-> Vérifier ces identifiants dans le seed si différents.
+> Mots de passe : voir `.env` local ou demander au responsable technique.
+> Ne jamais commiter les mots de passe de production dans le repo.
 
 ---
 
