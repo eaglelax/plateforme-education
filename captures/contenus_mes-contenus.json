@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [],
+  "stats": {
+    "brouillon": 0,
+    "en_attente": 0,
+    "a_amender": 0,
+    "valide": 0,
+    "publie": 0
+  },
+  "pagination": {
+    "total": 0,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 0,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}

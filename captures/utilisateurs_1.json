@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "nom": "Admin",
+    "prenom": "Système",
+    "telephone": "+22670000001",
+    "email": "admin@plateforme-educative.bf",
+    "statut_compte": "actif",
+    "derniere_connexion": "2026-04-26T16:34:29.000Z",
+    "date_creation": "2026-01-29T13:02:41.000Z",
+    "role": "ADMIN",
+    "role_id": 1,
+    "enfants": [],
+    "appareils": []
+  }
+}

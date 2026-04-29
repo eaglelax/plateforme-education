@@ -1,0 +1,128 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 5,
+      "nomPseudo": "Axo",
+      "avatar": null,
+      "age": 12,
+      "trancheAge": {
+        "min": 10,
+        "max": 12
+      },
+      "statut": "actif",
+      "codeConnexion": "ENF-PAHMN2",
+      "modeConnexion": "mot_de_passe",
+      "pointsXp": 0,
+      "niveauGlobal": 1,
+      "abonnementActif": false,
+      "badgesCount": 0,
+      "dateCreation": "2026-02-27T13:25:03.000Z",
+      "parent": {
+        "id": 12,
+        "nom": "Ouedraogo",
+        "prenom": "Amadou"
+      }
+    },
+    {
+      "id": 4,
+      "nomPseudo": "Moussa",
+      "avatar": null,
+      "age": 8,
+      "trancheAge": {
+        "min": 7,
+        "max": 9
+      },
+      "statut": "actif",
+      "codeConnexion": "ENF-FJMSLZ",
+      "modeConnexion": "mot_de_passe",
+      "pointsXp": 0,
+      "niveauGlobal": 1,
+      "abonnementActif": false,
+      "badgesCount": 0,
+      "dateCreation": "2026-02-27T12:47:58.000Z",
+      "parent": {
+        "id": 12,
+        "nom": "Ouedraogo",
+        "prenom": "Amadou"
+      }
+    },
+    {
+      "id": 3,
+      "nomPseudo": "Awa",
+      "avatar": null,
+      "age": 7,
+      "trancheAge": {
+        "min": 7,
+        "max": 9
+      },
+      "statut": "actif",
+      "codeConnexion": "ENF-YCSZ9A",
+      "modeConnexion": "mot_de_passe",
+      "pointsXp": 0,
+      "niveauGlobal": 1,
+      "abonnementActif": true,
+      "badgesCount": 0,
+      "dateCreation": "2026-02-27T11:39:43.000Z",
+      "parent": {
+        "id": 12,
+        "nom": "Ouedraogo",
+        "prenom": "Amadou"
+      }
+    },
+    {
+      "id": 2,
+      "nomPseudo": "Joachim",
+      "avatar": null,
+      "age": 6,
+      "trancheAge": {
+        "min": 4,
+        "max": 6
+      },
+      "statut": "actif",
+      "codeConnexion": "ENF-W827PV",
+      "modeConnexion": "pin",
+      "pointsXp": 0,
+      "niveauGlobal": 1,
+      "abonnementActif": false,
+      "badgesCount": 0,
+      "dateCreation": "2026-01-30T21:32:17.000Z",
+      "parent": {
+        "id": 6,
+        "nom": "BAZOUM",
+        "prenom": "Chams"
+      }
+    },
+    {
+      "id": 1,
+      "nomPseudo": "biba",
+      "avatar": null,
+      "age": 7,
+      "trancheAge": {
+        "min": 7,
+        "max": 9
+      },
+      "statut": "actif",
+      "codeConnexion": "ENF-VYA9UE",
+      "modeConnexion": "mot_de_passe",
+      "pointsXp": 0,
+      "niveauGlobal": 1,
+      "abonnementActif": false,
+      "badgesCount": 0,
+      "dateCreation": "2026-01-29T23:55:42.000Z",
+      "parent": {
+        "id": 9,
+        "nom": "Ouedraogo",
+        "prenom": "Aminata"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 5,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "nom": "Langues",
+      "description": "Français, Anglais et langues locales",
+      "icone": "🗣️",
+      "couleur": "#3498db",
+      "ordre_affichage": 1,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 2
+    },
+    {
+      "id": 2,
+      "nom": "Mathématiques",
+      "description": "Calcul, géométrie et logique",
+      "icone": "🔢",
+      "couleur": "#e74c3c",
+      "ordre_affichage": 2,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 4
+    },
+    {
+      "id": 3,
+      "nom": "Sciences",
+      "description": "Sciences naturelles et expériences",
+      "icone": "🔬",
+      "couleur": "#2ecc71",
+      "ordre_affichage": 3,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 0
+    },
+    {
+      "id": 4,
+      "nom": "Histoire-Géo",
+      "description": "Histoire du Burkina et du monde",
+      "icone": "🌍",
+      "couleur": "#f39c12",
+      "ordre_affichage": 4,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 1
+    },
+    {
+      "id": 5,
+      "nom": "Arts",
+      "description": "Musique, dessin et créativité",
+      "icone": "🎨",
+      "couleur": "#9b59b6",
+      "ordre_affichage": 5,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 0
+    },
+    {
+      "id": 6,
+      "nom": "Culture Burkinabè",
+      "description": "Traditions, contes et patrimoine",
+      "icone": "🏛️",
+      "couleur": "#e67e22",
+      "ordre_affichage": 6,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 2
+    },
+    {
+      "id": 7,
+      "nom": "Éducation Civique",
+      "description": "Citoyenneté et valeurs",
+      "icone": "🤝",
+      "couleur": "#1abc9c",
+      "ordre_affichage": 7,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 1
+    },
+    {
+      "id": 8,
+      "nom": "Informatique",
+      "description": "Initiation au numérique",
+      "icone": "💻",
+      "couleur": "#34495e",
+      "ordre_affichage": 8,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 2
+    },
+    {
+      "id": 9,
+      "nom": "Sport & Santé",
+      "description": "Activités physiques et hygiène",
+      "icone": "⚽",
+      "couleur": "#27ae60",
+      "ordre_affichage": 9,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 0
+    },
+    {
+      "id": 10,
+      "nom": "Éveil Musical",
+      "description": "Découverte des instruments",
+      "icone": "🎵",
+      "couleur": "#8e44ad",
+      "ordre_affichage": 10,
+      "est_actif": 1,
+      "date_creation": "2026-01-29T13:02:41.000Z",
+      "contenus_count": 0
+    }
+  ]
+}

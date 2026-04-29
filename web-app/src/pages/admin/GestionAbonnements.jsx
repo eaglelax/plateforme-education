@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiPackage, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiX, FiUser, FiCalendar, FiCreditCard, FiPlus, FiEdit2, FiCheck } from 'react-icons/fi';
 import { abonnementService } from '../../services/api';
-import api from '../../services/api';
 import './AdminPages.css';
 import './GestionAbonnements.css';
 
@@ -55,10 +54,10 @@ function GestionAbonnements() {
     try {
       const payload = { ...typeForm, prix: parseInt(typeForm.prix), duree_jours: parseInt(typeForm.duree_jours), nombre_appareils: parseInt(typeForm.nombre_appareils) };
       if (editTypeId) {
-        await api.put(`/abonnements/types/${editTypeId}`, payload);
+        await abonnementService.updateType(editTypeId, payload);
         setSuccess('Type modifie avec succes');
       } else {
-        await api.post('/abonnements/types', payload);
+        await abonnementService.createType(payload);
         setSuccess('Type cree avec succes');
       }
       resetTypeForm();

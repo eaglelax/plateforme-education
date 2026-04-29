@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "dateDebut": "2026-02-27T11:41:43.000Z",
+      "dateFin": "2027-02-27T11:41:43.000Z",
+      "statut": "actif",
+      "renouvellementAuto": 0,
+      "periodeGrace": 3,
+      "type": {
+        "id": 8,
+        "nom": "Premium Annuel",
+        "prix": "40000.00",
+        "duree": "ANNUEL",
+        "devise": "XOF"
+      },
+      "enfant": {
+        "id": 3,
+        "nom": "Awa",
+        "codeConnexion": "ENF-YCSZ9A"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}

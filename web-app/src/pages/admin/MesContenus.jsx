@@ -17,6 +17,7 @@ import {
   FiHelpCircle,
   FiRefreshCw,
   FiLayers,
+  FiArchive,
 } from 'react-icons/fi';
 import { gestionContenuService, contenuService } from '../../services/api';
 import './MesContenus.css';
@@ -112,6 +113,19 @@ function MesContenus() {
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur lors de la publication');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleArchiver = async (id) => {
+    if (!confirm('Archiver ce contenu ? Il ne sera plus visible par les enfants.')) return;
+    setActionLoading(id);
+    try {
+      await contenuService.archiver(id);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Erreur lors de l\'archivage');
     } finally {
       setActionLoading(null);
     }
@@ -310,12 +324,22 @@ function MesContenus() {
                     )}
 
                     {contenu.statut === 'publie' && (
-                      <Link
-                        to={`/admin/contenus/${contenu.id}`}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        <FiEye /> Voir
-                      </Link>
+                      <>
+                        <Link
+                          to={`/admin/contenus/${contenu.id}`}
+                          className="btn btn-secondary btn-sm"
+                        >
+                          <FiEye /> Voir
+                        </Link>
+                        <button
+                          className="btn btn-warning btn-sm"
+                          onClick={() => handleArchiver(contenu.id)}
+                          disabled={actionLoading === contenu.id}
+                          title="Archiver ce contenu"
+                        >
+                          <FiArchive /> Archiver
+                        </button>
+                      </>
                     )}
 
                     {/* Supprimer uniquement pour brouillons */}

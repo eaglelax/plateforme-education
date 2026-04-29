@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "montant": "40000.00",
+      "devise": "XOF",
+      "methode": "orange_money",
+      "statut": "en_attente",
+      "reference_externe": "PAY-1772192504044-1f5c64c6",
+      "numero_telephone": "+22655012658",
+      "details_transaction": null,
+      "date_paiement": null,
+      "date_creation": "2026-02-27T12:41:44.000Z",
+      "abonnement_id": 1,
+      "utilisateur_id": 12,
+      "abo_date_debut": "2026-02-27T11:41:43.000Z",
+      "abo_date_fin": "2027-02-27T11:41:43.000Z",
+      "type_abonnement_nom": "Premium Annuel",
+      "enfant_nom": "Awa",
+      "utilisateur_nom": "Ouedraogo",
+      "utilisateur_prenom": "Amadou"
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}

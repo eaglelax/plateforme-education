@@ -1,0 +1,133 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 15,
+      "nom": "lsad",
+      "prenom": "k",
+      "telephone": "59388392",
+      "email": "test@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": null,
+      "date_creation": "2026-04-03T22:38:40.000Z",
+      "role": "GESTIONNAIRE_CONTENU",
+      "enfants_count": 0
+    },
+    {
+      "id": 14,
+      "nom": "Test",
+      "prenom": "Validateur",
+      "telephone": "+22670100002",
+      "email": "validateur.test@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-03-26T12:48:27.000Z",
+      "date_creation": "2026-03-26T12:38:09.000Z",
+      "role": "VALIDATEUR",
+      "enfants_count": 0
+    },
+    {
+      "id": 13,
+      "nom": "Test",
+      "prenom": "Gestionnaire",
+      "telephone": "+22670100001",
+      "email": "gestionnaire.test@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-04-03T23:28:12.000Z",
+      "date_creation": "2026-03-26T12:38:03.000Z",
+      "role": "GESTIONNAIRE_CONTENU",
+      "enfants_count": 0
+    },
+    {
+      "id": 12,
+      "nom": "Ouedraogo",
+      "prenom": "Amadou",
+      "telephone": "70000001",
+      "email": "test.parent@fasoyiri.com",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-03-04T12:31:17.000Z",
+      "date_creation": "2026-02-27T11:38:54.000Z",
+      "role": "PARENT",
+      "enfants_count": 3
+    },
+    {
+      "id": 9,
+      "nom": "Ouedraogo",
+      "prenom": "Aminata",
+      "telephone": "+22670000004",
+      "email": "parent@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-03-19T12:03:06.000Z",
+      "date_creation": "2026-01-29T23:52:36.000Z",
+      "role": "PARENT",
+      "enfants_count": 1
+    },
+    {
+      "id": 7,
+      "nom": "Validateur",
+      "prenom": "Test",
+      "telephone": "+22670000002",
+      "email": "validateur@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-04-23T23:53:18.000Z",
+      "date_creation": "2026-01-29T23:37:47.000Z",
+      "role": "VALIDATEUR",
+      "enfants_count": 0
+    },
+    {
+      "id": 8,
+      "nom": "Gestionnaire",
+      "prenom": "Contenu",
+      "telephone": "+22670000003",
+      "email": "gestionnaire@plateforme-educative.bf",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-04-23T23:52:25.000Z",
+      "date_creation": "2026-01-29T23:37:47.000Z",
+      "role": "GESTIONNAIRE_CONTENU",
+      "enfants_count": 0
+    },
+    {
+      "id": 6,
+      "nom": "BAZOUM",
+      "prenom": "Chams",
+      "telephone": "60419117",
+      "email": "chamsbazoum@gmail.com",
+      "statut_compte": "actif",
+      "derniere_connexion": null,
+      "date_creation": "2026-01-29T18:04:22.000Z",
+      "role": "PARENT",
+      "enfants_count": 1
+    },
+    {
+      "id": 5,
+      "nom": "axel",
+      "prenom": "zongo",
+      "telephone": "55012658",
+      "email": "joachimaxelzongo@gmail.com",
+      "statut_compte": "actif",
+      "derniere_connexion": null,
+      "date_creation": "2026-01-29T17:59:13.000Z",
+      "role": "PARENT",
+      "enfants_count": 0
+    },
+    {
+      "id": 4,
+      "nom": "Test",
+      "prenom": "Parent",
+      "telephone": "22670000001",
+      "email": "testparent@test.com",
+      "statut_compte": "actif",
+      "derniere_connexion": "2026-01-29T18:02:18.000Z",
+      "date_creation": "2026-01-29T17:46:56.000Z",
+      "role": "PARENT",
+      "enfants_count": 0
+    }
+  ],
+  "pagination": {
+    "total": 12,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 2,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "success": true,
+  "data": {
+    "compteurs": {
+      "utilisateurs": {
+        "total": 12,
+        "actifs": "12",
+        "nouveauxAujourdhui": "0"
+      },
+      "enfants": {
+        "total": 5,
+        "actifs": "5"
+      },
+      "abonnements": {
+        "total": 1,
+        "actifs": "1",
+        "expires": "0"
+      },
+      "contenus": {
+        "total": 16,
+        "publies": "12",
+        "brouillons": "0"
+      },
+      "revenus": {
+        "total": "0.00",
+        "moisEnCours": "0.00"
+      }
+    },
+    "activiteRecente": [],
+    "derniersUtilisateurs": [
+      {
+        "id": 15,
+        "nom": "lsad",
+        "prenom": "k",
+        "email": "test@plateforme-educative.bf",
+        "date_creation": "2026-04-03T22:38:40.000Z",
+        "role": "GESTIONNAIRE_CONTENU"
+      },
+      {
+        "id": 14,
+        "nom": "Test",
+        "prenom": "Validateur",
+        "email": "validateur.test@plateforme-educative.bf",
+        "date_creation": "2026-03-26T12:38:09.000Z",
+        "role": "VALIDATEUR"
+      },
+      {
+        "id": 13,
+        "nom": "Test",
+        "prenom": "Gestionnaire",
+        "email": "gestionnaire.test@plateforme-educative.bf",
+        "date_creation": "2026-03-26T12:38:03.000Z",
+        "role": "GESTIONNAIRE_CONTENU"
+      },
+      {
+        "id": 12,
+        "nom": "Ouedraogo",
+        "prenom": "Amadou",
+        "email": "test.parent@fasoyiri.com",
+        "date_creation": "2026-02-27T11:38:54.000Z",
+        "role": "PARENT"
+      },
+      {
+        "id": 9,
+        "nom": "Ouedraogo",
+        "prenom": "Aminata",
+        "email": "parent@plateforme-educative.bf",
+        "date_creation": "2026-01-29T23:52:36.000Z",
+        "role": "PARENT"
+      }
+    ],
+    "derniersPaiements": [
+      {
+        "id": 1,
+        "montant": "40000.00",
+        "methode": "orange_money",
+        "statut": "en_attente",
+        "date_creation": "2026-02-27T12:41:44.000Z",
+        "utilisateur_nom": "Ouedraogo",
+        "utilisateur_prenom": "Amadou"
+      }
+    ]
+  }
+}

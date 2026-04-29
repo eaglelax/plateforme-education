@@ -1,0 +1,101 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "nom": "Découverte",
+      "description": "Parfait pour essayer la plateforme pendant 1 mois",
+      "prix": "2500.00",
+      "devise": "XOF",
+      "duree": "MENSUEL",
+      "duree_jours": 30,
+      "nombre_appareils_max": 1,
+      "telechargement_autorise": 0,
+      "contenu_premium": 0
+    },
+    {
+      "id": 5,
+      "nom": "Découverte",
+      "description": "Parfait pour essayer la plateforme pendant 1 mois",
+      "prix": "2500.00",
+      "devise": "XOF",
+      "duree": "MENSUEL",
+      "duree_jours": 30,
+      "nombre_appareils_max": 1,
+      "telechargement_autorise": 0,
+      "contenu_premium": 0
+    },
+    {
+      "id": 2,
+      "nom": "Essentiel",
+      "description": "Abonnement mensuel avec accès complet",
+      "prix": "5000.00",
+      "devise": "XOF",
+      "duree": "MENSUEL",
+      "duree_jours": 30,
+      "nombre_appareils_max": 2,
+      "telechargement_autorise": 1,
+      "contenu_premium": 0
+    },
+    {
+      "id": 6,
+      "nom": "Essentiel",
+      "description": "Abonnement mensuel avec accès complet",
+      "prix": "5000.00",
+      "devise": "XOF",
+      "duree": "MENSUEL",
+      "duree_jours": 30,
+      "nombre_appareils_max": 2,
+      "telechargement_autorise": 1,
+      "contenu_premium": 0
+    },
+    {
+      "id": 3,
+      "nom": "Famille",
+      "description": "Abonnement trimestriel pour toute la famille",
+      "prix": "12000.00",
+      "devise": "XOF",
+      "duree": "TRIMESTRIEL",
+      "duree_jours": 90,
+      "nombre_appareils_max": 3,
+      "telechargement_autorise": 1,
+      "contenu_premium": 1
+    },
+    {
+      "id": 7,
+      "nom": "Famille",
+      "description": "Abonnement trimestriel pour toute la famille",
+      "prix": "12000.00",
+      "devise": "XOF",
+      "duree": "TRIMESTRIEL",
+      "duree_jours": 90,
+      "nombre_appareils_max": 3,
+      "telechargement_autorise": 1,
+      "contenu_premium": 1
+    },
+    {
+      "id": 4,
+      "nom": "Premium Annuel",
+      "description": "Meilleure offre ! Accès illimité pendant 1 an",
+      "prix": "40000.00",
+      "devise": "XOF",
+      "duree": "ANNUEL",
+      "duree_jours": 365,
+      "nombre_appareils_max": 5,
+      "telechargement_autorise": 1,
+      "contenu_premium": 1
+    },
+    {
+      "id": 8,
+      "nom": "Premium Annuel",
+      "description": "Meilleure offre ! Accès illimité pendant 1 an",
+      "prix": "40000.00",
+      "devise": "XOF",
+      "duree": "ANNUEL",
+      "duree_jours": 365,
+      "nombre_appareils_max": 5,
+      "telechargement_autorise": 1,
+      "contenu_premium": 1
+    }
+  ]
+}

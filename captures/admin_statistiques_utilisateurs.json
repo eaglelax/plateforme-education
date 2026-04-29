@@ -1,0 +1,49 @@
+{
+  "success": true,
+  "data": {
+    "parStatut": [
+      {
+        "statut_compte": "actif",
+        "nombre": 12
+      }
+    ],
+    "parRole": [
+      {
+        "nom": "ADMIN",
+        "nombre": 1
+      },
+      {
+        "nom": "PARENT",
+        "nombre": 6
+      },
+      {
+        "nom": "VALIDATEUR",
+        "nombre": 2
+      },
+      {
+        "nom": "GESTIONNAIRE_CONTENU",
+        "nombre": 3
+      }
+    ],
+    "inscriptionsParJour": [
+      {
+        "jour": "2026-04-03T00:00:00.000Z",
+        "nombre": 1
+      }
+    ],
+    "connexionsRecentes": [
+      {
+        "jour": "2026-04-03T00:00:00.000Z",
+        "nombre": 1
+      },
+      {
+        "jour": "2026-04-23T00:00:00.000Z",
+        "nombre": 2
+      },
+      {
+        "jour": "2026-04-26T00:00:00.000Z",
+        "nombre": 1
+      }
+    ]
+  }
+}

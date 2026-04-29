@@ -207,12 +207,23 @@ function AdminDashboard() {
             </Link>
           )}
 
-          <Link to="/admin/contenus" className="quick-action-card">
-            <div className="action-icon">
-              <FiList />
-            </div>
-            <span>Gerer les contenus</span>
-          </Link>
+          {(userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' || hasAdminRole) && (
+            <Link to="/admin/contenus" className="quick-action-card">
+              <div className="action-icon">
+                <FiList />
+              </div>
+              <span>Gerer les contenus</span>
+            </Link>
+          )}
+
+          {userRole?.toUpperCase() === 'VALIDATEUR' && (
+            <Link to="/admin/validations" className="quick-action-card">
+              <div className="action-icon">
+                <FiCheckCircle />
+              </div>
+              <span>Valider les contenus</span>
+            </Link>
+          )}
 
           {hasAdminRole && (
             <Link to="/admin/utilisateurs" className="quick-action-card">

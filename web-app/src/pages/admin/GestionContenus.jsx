@@ -52,6 +52,7 @@ function GestionContenus() {
   const [filterDomaine, setFilterDomaine] = useState('');
   const [filterStatut, setFilterStatut] = useState('');
   const [domaines, setDomaines] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, total: 0, limit: 20 });
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -83,15 +84,17 @@ function GestionContenus() {
     setLoading(true);
     try {
       const [contenusRes, domainesRes] = await Promise.allSettled([
-        contenuService.getAllAdmin({ limit: 100 }),
+        contenuService.getAllAdmin({ page: pagination.page, limit: pagination.limit }),
         contenuService.getDomaines(),
       ]);
 
       if (contenusRes.status === 'fulfilled') {
         const data = contenusRes.value.data?.data || contenusRes.value.data || [];
         setContenus(Array.isArray(data) ? data : []);
+        if (contenusRes.value.data?.pagination) {
+          setPagination(p => ({ ...p, total: contenusRes.value.data.pagination.total }));
+        }
       } else {
-        console.error('Erreur chargement contenus:', contenusRes.reason);
         setContenus([]);
       }
 
@@ -356,6 +359,14 @@ function GestionContenus() {
           </div>
         )}
       </div>
+
+      {pagination.total > pagination.limit && (
+        <div className="pagination">
+          <button disabled={pagination.page === 1} onClick={() => { setPagination(p => ({ ...p, page: p.page - 1 })); loadData(); }}>Precedent</button>
+          <span>Page {pagination.page} sur {Math.ceil(pagination.total / pagination.limit)}</span>
+          <button disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)} onClick={() => { setPagination(p => ({ ...p, page: p.page + 1 })); loadData(); }}>Suivant</button>
+        </div>
+      )}
 
       {/* Modal Detail Contenu */}
       {showModal && selectedContenu && (

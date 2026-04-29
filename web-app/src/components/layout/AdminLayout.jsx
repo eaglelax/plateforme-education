@@ -2,7 +2,6 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome,
   FiBook,
-  FiPlusCircle,
   FiUsers,
   FiPieChart,
   FiLogOut,
@@ -16,13 +15,17 @@ import {
   FiGrid,
   FiFileText,
   FiBell,
+  FiSettings,
+  FiSmile,
+  FiChevronLeft,
 } from 'react-icons/fi';
 import { useState } from 'react';
 import useAdminAuthStore from '../../stores/adminAuthStore';
 import './AdminLayout.css';
 
 function AdminLayout() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout, getRole, isAdmin } = useAdminAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,173 +39,138 @@ function AdminLayout() {
 
   const userRole = getRole()?.toUpperCase() || '';
   const hasAdminRole = isAdmin();
-  const isValidateur = userRole === 'VALIDATEUR';
   const isGestionnaireContenu = userRole === 'GESTIONNAIRE_CONTENU';
+  const isValidateur = userRole === 'VALIDATEUR';
 
-  // Determiner les acces selon le role
   const canManageContent = hasAdminRole || isGestionnaireContenu;
+  const canManageDomains = hasAdminRole || isGestionnaireContenu;
   const canValidate = hasAdminRole || isValidateur;
-  const canViewUsers = hasAdminRole || isValidateur;
+  const canViewUsers = hasAdminRole;
   const canViewStats = hasAdminRole;
   const canViewPayments = hasAdminRole;
   const canViewSubscriptions = hasAdminRole;
 
+  const getRoleLabel = () => {
+    switch (userRole) {
+      case 'ADMIN': return 'Administrateur';
+      case 'GESTIONNAIRE_CONTENU': return 'Gestionnaire';
+      case 'VALIDATEUR': return 'Validateur';
+      default: return userRole;
+    }
+  };
+
+  const NavLink = ({ to, icon: Icon, label, exact }) => (
+    <Link
+      to={to}
+      className={`sidebar-link ${isActive(to) ? 'active' : ''}`}
+      onClick={() => setMobileOpen(false)}
+      title={collapsed ? label : undefined}
+    >
+      <Icon className="sidebar-link-icon" />
+      {!collapsed && <span>{label}</span>}
+    </Link>
+  );
+
   return (
-    <div className="admin-layout">
-      <nav className="admin-navbar">
-        <div className="admin-navbar-container">
-          <Link to="/admin/dashboard" className="admin-brand">
-            <div className="admin-brand-icon">
-              <FiShield />
-            </div>
-            <div className="admin-brand-text">
-              <span className="brand-title">Administration</span>
-              <span className="brand-subtitle">Plateforme Educative</span>
-            </div>
+    <div className={`admin-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Mobile overlay */}
+      {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+        {/* Brand */}
+        <div className="sidebar-brand">
+          <Link to="/admin/dashboard" className="sidebar-brand-link">
+            <div className="sidebar-brand-icon"><FiShield /></div>
+            {!collapsed && (
+              <div className="sidebar-brand-text">
+                <span className="sidebar-brand-title">Faso Yiri</span>
+                <span className="sidebar-brand-sub">Administration</span>
+              </div>
+            )}
           </Link>
-
-          <button className="admin-menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          <button className="sidebar-collapse-btn" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Agrandir' : 'Reduire'}>
+            <FiChevronLeft className={collapsed ? 'rotated' : ''} />
           </button>
-
-          <div className={`admin-navbar-menu ${menuOpen ? 'active' : ''}`}>
-            <Link
-              to="/admin/dashboard"
-              className={`admin-nav-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              <FiHome /> <span>Dashboard</span>
-            </Link>
-
-            {/* Gestion des contenus - Admin et Gestionnaire de contenu */}
-            {canManageContent && (
-              <>
-                <Link
-                  to="/admin/contenus"
-                  className={`admin-nav-link ${isActive('/admin/contenus') && !location.pathname.includes('nouveau') ? 'active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FiBook /> <span>Contenus</span>
-                </Link>
-
-                <Link
-                  to="/admin/mes-contenus"
-                  className={`admin-nav-link ${isActive('/admin/mes-contenus') || isActive('/admin/contenus/nouveau') ? 'active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FiFolder /> <span>Mes Contenus</span>
-                </Link>
-              </>
-            )}
-
-            {/* Validation - Admin et Validateur */}
-            {canValidate && (
-              <Link
-                to="/admin/validations"
-                className={`admin-nav-link ${isActive('/admin/validations') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiCheckSquare /> <span>Validations</span>
-              </Link>
-            )}
-
-            {/* Gestion des utilisateurs - Admin uniquement */}
-            {canViewUsers && (
-              <Link
-                to="/admin/utilisateurs"
-                className={`admin-nav-link ${isActive('/admin/utilisateurs') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiUsers /> <span>Utilisateurs</span>
-              </Link>
-            )}
-
-            {/* Gestion des abonnements - Admin uniquement */}
-            {canViewSubscriptions && (
-              <Link
-                to="/admin/abonnements"
-                className={`admin-nav-link ${isActive('/admin/abonnements') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiPackage /> <span>Abonnements</span>
-              </Link>
-            )}
-
-            {/* Gestion des paiements - Admin uniquement */}
-            {canViewPayments && (
-              <Link
-                to="/admin/paiements"
-                className={`admin-nav-link ${isActive('/admin/paiements') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiCreditCard /> <span>Paiements</span>
-              </Link>
-            )}
-
-            {/* Domaines - Admin uniquement */}
-            {hasAdminRole && (
-              <Link
-                to="/admin/domaines"
-                className={`admin-nav-link ${isActive('/admin/domaines') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiGrid /> <span>Domaines</span>
-              </Link>
-            )}
-
-            {/* Statistiques - Admin uniquement */}
-            {canViewStats && (
-              <Link
-                to="/admin/statistiques"
-                className={`admin-nav-link ${isActive('/admin/statistiques') ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <FiPieChart /> <span>Statistiques</span>
-              </Link>
-            )}
-
-            {/* Notifications + Journal - Admin uniquement */}
-            {hasAdminRole && (
-              <>
-                <Link
-                  to="/admin/notifications"
-                  className={`admin-nav-link ${isActive('/admin/notifications') ? 'active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                  title="Notifications"
-                >
-                  <FiBell /> <span>Notifs</span>
-                </Link>
-                <Link
-                  to="/admin/journal"
-                  className={`admin-nav-link ${isActive('/admin/journal') ? 'active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                  title="Journal d'audit"
-                >
-                  <FiFileText /> <span>Journal</span>
-                </Link>
-              </>
-            )}
-          </div>
-
-          <div className="admin-navbar-user">
-            <div className="admin-user-info">
-              <span className="admin-user-name">{user?.prenom} {user?.nom}</span>
-              <span className="admin-user-role">{userRole}</span>
-            </div>
-            <button className="admin-btn-logout" onClick={handleLogout}>
-              <FiLogOut />
-            </button>
-          </div>
         </div>
-      </nav>
 
-      <main className="admin-main-content">
-        <Outlet />
-      </main>
+        {/* Navigation */}
+        <nav className="sidebar-nav">
+          <div className="sidebar-section">
+            {!collapsed && <span className="sidebar-section-title">General</span>}
+            <NavLink to="/admin/dashboard" icon={FiHome} label="Dashboard" />
+          </div>
 
-      <footer className="admin-footer">
-        <p>&copy; 2024 Plateforme Educative Burkina Faso - Administration</p>
-      </footer>
+          {canManageContent && (
+            <div className="sidebar-section">
+              {!collapsed && <span className="sidebar-section-title">Contenus</span>}
+              <NavLink to="/admin/contenus" icon={FiBook} label="Tous les contenus" />
+              <NavLink to="/admin/mes-contenus" icon={FiFolder} label="Mes contenus" />
+              {canManageDomains && <NavLink to="/admin/domaines" icon={FiGrid} label="Domaines" />}
+            </div>
+          )}
+
+          {canValidate && (
+            <div className="sidebar-section">
+              {!collapsed && <span className="sidebar-section-title">Validation</span>}
+              <NavLink to="/admin/validations" icon={FiCheckSquare} label="Validations" />
+            </div>
+          )}
+
+          {hasAdminRole && (
+            <div className="sidebar-section">
+              {!collapsed && <span className="sidebar-section-title">Gestion</span>}
+              <NavLink to="/admin/utilisateurs" icon={FiUsers} label="Utilisateurs" />
+              <NavLink to="/admin/enfants" icon={FiSmile} label="Profils enfants" />
+              <NavLink to="/admin/abonnements" icon={FiPackage} label="Abonnements" />
+              <NavLink to="/admin/paiements" icon={FiCreditCard} label="Paiements" />
+            </div>
+          )}
+
+          {hasAdminRole && (
+            <div className="sidebar-section">
+              {!collapsed && <span className="sidebar-section-title">Systeme</span>}
+              <NavLink to="/admin/statistiques" icon={FiPieChart} label="Statistiques" />
+              <NavLink to="/admin/notifications" icon={FiBell} label="Notifications" />
+              <NavLink to="/admin/journal" icon={FiFileText} label="Journal" />
+              <NavLink to="/admin/parametres" icon={FiSettings} label="Parametres" />
+            </div>
+          )}
+        </nav>
+
+        {/* User */}
+        <div className="sidebar-user">
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-avatar">
+              {user?.prenom?.[0]}{user?.nom?.[0]}
+            </div>
+            {!collapsed && (
+              <div className="sidebar-user-details">
+                <span className="sidebar-user-name">{user?.prenom} {user?.nom}</span>
+                <span className="sidebar-user-role">{getRoleLabel()}</span>
+              </div>
+            )}
+          </div>
+          <button className="sidebar-logout-btn" onClick={handleLogout} title="Deconnexion">
+            <FiLogOut />
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="admin-main">
+        <header className="admin-topbar">
+          <button className="mobile-menu-btn" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+          </button>
+          <div className="topbar-right">
+            <span className="topbar-role">{getRoleLabel()}</span>
+          </div>
+        </header>
+        <main className="admin-main-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

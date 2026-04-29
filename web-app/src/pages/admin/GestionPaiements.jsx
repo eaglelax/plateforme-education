@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiCreditCard, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiClock, FiXCircle, FiX, FiUser, FiHash, FiRotateCcw, FiCheck } from 'react-icons/fi';
 import { paiementService } from '../../services/api';
-import api from '../../services/api';
 import './AdminPages.css';
 import './GestionPaiements.css';
 
@@ -87,7 +86,7 @@ function GestionPaiements() {
   const handleRembourser = async (id) => {
     if (!confirm('Confirmer le remboursement de ce paiement ?')) return;
     try {
-      await api.post(`/paiements/${id}/rembourser`);
+      await paiementService.rembourser(id);
       setSuccess('Paiement rembourse avec succes');
       setShowModal(false);
       fetchPaiements();

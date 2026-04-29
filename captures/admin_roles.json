@@ -1,0 +1,45 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "nom": "ADMIN",
+      "description": "Administrateur de la plateforme avec tous les droits",
+      "permissions": "{\"users\":[\"create\",\"read\",\"update\",\"delete\"],\"children\":[\"create\",\"read\",\"update\",\"delete\"],\"content\":[\"create\",\"read\",\"update\",\"delete\",\"publish\"],\"subscriptions\":[\"create\",\"read\",\"update\",\"delete\"],\"payments\":[\"read\",\"update\",\"refund\"],\"settings\":[\"read\",\"update\"],\"reports\":[\"read\"]}",
+      "date_creation": "2026-01-29T13:02:40.000Z",
+      "utilisateurs_count": 1
+    },
+    {
+      "id": 2,
+      "nom": "PARENT",
+      "description": "Parent gérant les profils de ses enfants",
+      "permissions": "{\"children\":[\"create\",\"read\",\"update\",\"delete\"],\"subscriptions\":[\"create\",\"read\",\"update\"],\"payments\":[\"create\",\"read\"],\"settings\":[\"read\",\"update\"]}",
+      "date_creation": "2026-01-29T13:02:40.000Z",
+      "utilisateurs_count": 6
+    },
+    {
+      "id": 3,
+      "nom": "ENFANT",
+      "description": "Profil enfant avec accès aux contenus",
+      "permissions": "{\"content\":[\"read\"],\"progress\":[\"read\",\"update\"]}",
+      "date_creation": "2026-01-29T13:02:40.000Z",
+      "utilisateurs_count": 0
+    },
+    {
+      "id": 7,
+      "nom": "VALIDATEUR",
+      "description": "Validateur de contenus éducatifs",
+      "permissions": "{\"content\": [\"read\", \"validate\", \"reject\"], \"reports\": [\"read\"]}",
+      "date_creation": "2026-01-29T23:37:47.000Z",
+      "utilisateurs_count": 2
+    },
+    {
+      "id": 8,
+      "nom": "GESTIONNAIRE_CONTENU",
+      "description": "Gestionnaire de contenus éducatifs",
+      "permissions": "{\"content\": [\"create\", \"read\", \"update\", \"delete\"], \"reports\": [\"read\"]}",
+      "date_creation": "2026-01-29T23:37:47.000Z",
+      "utilisateurs_count": 3
+    }
+  ]
+}

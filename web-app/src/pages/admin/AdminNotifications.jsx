@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiBell, FiSend, FiUsers, FiUser, FiAlertCircle, FiCheck, FiRefreshCw } from 'react-icons/fi';
-import { adminService } from '../../services/api';
-import api from '../../services/api';
+import { adminService, notificationService } from '../../services/api';
 import './AdminPages.css';
 
 function AdminNotifications() {
@@ -43,14 +42,14 @@ function AdminNotifications() {
     setError('');
     try {
       if (mode === 'broadcast') {
-        await api.post('/notifications/broadcast', {
+        await notificationService.broadcast({
           titre: formData.titre,
           message: formData.message,
           type: formData.type,
         });
         setSuccess('Notification envoyee a tous les utilisateurs');
       } else {
-        await api.post('/notifications/envoyer', {
+        await notificationService.envoyer({
           destinataireId: parseInt(formData.destinataireId),
           titre: formData.titre,
           message: formData.message,

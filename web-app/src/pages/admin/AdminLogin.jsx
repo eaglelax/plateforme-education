@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { FiMail, FiLock, FiAlertCircle, FiShield, FiEye, FiEyeOff, FiSettings, FiCheckCircle, FiEdit3 } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
+import { FiMail, FiLock, FiAlertCircle, FiShield, FiEye, FiEyeOff, FiSettings, FiCheckCircle, FiEdit3, FiClock } from 'react-icons/fi';
 import useAdminAuthStore from '../../stores/adminAuthStore';
 import './AdminLogin.css';
 
@@ -9,10 +9,19 @@ function AdminLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login, isAuthenticated, hasAccess } = useAdminAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Afficher message si session expirée
+  useEffect(() => {
+    if (searchParams.get('expired') === '1') {
+      setInfo('Votre session a expiré, veuillez vous reconnecter.');
+    }
+  }, [searchParams]);
 
   // Si deja connecte en admin avec acces valide, rediriger
   if (isAuthenticated && hasAccess()) {
@@ -61,6 +70,23 @@ function AdminLogin() {
         </div>
 
         <form className="admin-login-form" onSubmit={handleSubmit} noValidate>
+          {info && !error && (
+            <div className="info-alert" role="status" aria-live="polite" style={{
+              padding: '0.75rem 1rem',
+              background: '#FEF3C7',
+              border: '1px solid #FCD34D',
+              borderRadius: 8,
+              color: '#92400E',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginBottom: '1rem',
+              fontSize: '0.9rem'
+            }}>
+              <FiClock aria-hidden="true" />
+              <span>{info}</span>
+            </div>
+          )}
           {error && (
             <div className="error-alert" role="alert" aria-live="polite">
               <FiAlertCircle aria-hidden="true" />

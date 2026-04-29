@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "Faso Yiri API (LWS)",
+    "description": "API de la plateforme educative deployee sur LWS. URL pattern: ?route=/api/...",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://apieducative.genius-universe.com", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "Login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.success && data.data) {",
+                  "  pm.collectionVariables.set('accessToken', data.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.data.refreshToken);",
+                  "  console.log('Token stored');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifiant\": \"admin@plateforme-educative.bf\",\n  \"motDePasse\": \"REMPLACER_PAR_VOTRE_MDP\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/?route=/api/auth/login", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/login" }] }
+          }
+        },
+        {
+          "name": "Login (gestionnaire)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"identifiant\": \"gestionnaire@plateforme-educative.bf\",\n  \"motDePasse\": \"REMPLACER\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/auth/login", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/login" }] }
+          }
+        },
+        {
+          "name": "Login (validateur)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"identifiant\": \"validateur@plateforme-educative.bf\",\n  \"motDePasse\": \"REMPLACER\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/auth/login", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/login" }] }
+          }
+        },
+        {
+          "name": "Register (parent)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Doe\",\n  \"prenom\": \"John\",\n  \"telephone\": \"+22670000000\",\n  \"email\": \"john@example.com\",\n  \"motDePasse\": \"Test2026!\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/auth/register", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/register" }] }
+          }
+        },
+        { "name": "Me", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/auth/me", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/me" }] } } },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ancienMotDePasse\": \"old\",\n  \"nouveauMotDePasse\": \"new\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/auth/change-password", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/auth/change-password" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "UTILISATEURS (Admin)",
+      "item": [
+        { "name": "Liste utilisateurs", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/utilisateurs", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/utilisateurs" }] } } },
+        { "name": "Detail utilisateur", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/utilisateurs/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/utilisateurs/1" }] } } },
+        {
+          "name": "Creer utilisateur",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Nom\",\n  \"prenom\": \"Prenom\",\n  \"telephone\": \"+22670111111\",\n  \"email\": \"new@example.com\",\n  \"motDePasse\": \"Test2026!\",\n  \"roleId\": 3\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/utilisateurs", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/utilisateurs" }] }
+          }
+        },
+        {
+          "name": "Modifier utilisateur",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Nouveau\",\n  \"prenom\": \"Prenom\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/utilisateurs/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/utilisateurs/1" }] }
+          }
+        },
+        { "name": "Supprimer utilisateur", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/?route=/api/utilisateurs/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/utilisateurs/1" }] } } }
+      ]
+    },
+    {
+      "name": "ENFANTS",
+      "item": [
+        { "name": "Liste enfants", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/enfants", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/enfants" }] } } },
+        { "name": "Detail enfant", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/enfants/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/enfants/1" }] } } },
+        {
+          "name": "Creer enfant",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"prenom\": \"Lila\",\n  \"dateNaissance\": \"2018-05-10\",\n  \"genre\": \"F\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/enfants", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/enfants" }] }
+          }
+        },
+        { "name": "Progression", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/enfants/1/progression", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/enfants/1/progression" }] } } },
+        { "name": "Badges", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/enfants/1/badges", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/enfants/1/badges" }] } } }
+      ]
+    },
+    {
+      "name": "CONTENUS",
+      "item": [
+        { "name": "Liste domaines", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/domaines", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/domaines" }] } } },
+        { "name": "Catalogue (publie)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus" }] } } },
+        { "name": "Tous (admin)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/tous", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/tous" }] } } },
+        { "name": "Mes contenus", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/mes-contenus", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/mes-contenus" }] } } },
+        { "name": "A valider", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/a-valider", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/a-valider" }] } } },
+        { "name": "Stats validation", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/stats-validation", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/stats-validation" }] } } },
+        { "name": "Detail contenu", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1" }] } } },
+        {
+          "name": "Creer contenu",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"titre\": \"Test\",\n  \"description\": \"...\",\n  \"type\": \"video\",\n  \"domaineId\": 1,\n  \"trancheAgeMin\": 5,\n  \"trancheAgeMax\": 8\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/contenus", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus" }] }
+          }
+        },
+        { "name": "Soumettre", "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1/soumettre", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1/soumettre" }] } } },
+        { "name": "Valider", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"commentaire\": \"OK\"}" }, "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1/valider", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1/valider" }] } } },
+        { "name": "Amender", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"commentaire\": \"Corriger X\"}" }, "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1/amender", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1/amender" }] } } },
+        { "name": "Publier", "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1/publier", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1/publier" }] } } },
+        { "name": "Supprimer contenu", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/?route=/api/contenus/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/1" }] } } },
+        {
+          "name": "Creer domaine",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Test\",\n  \"description\": \"...\",\n  \"icone\": \"book\",\n  \"couleur\": \"#6366f1\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/contenus/domaines", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/domaines" }] }
+          }
+        },
+        { "name": "Modifier domaine", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"estActif\": false}" }, "url": { "raw": "{{baseUrl}}/?route=/api/contenus/domaines/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/contenus/domaines/1" }] } } }
+      ]
+    },
+    {
+      "name": "QUIZ",
+      "item": [
+        { "name": "Quiz d'un contenu", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/quiz/contenu/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/quiz/contenu/1" }] } } },
+        {
+          "name": "Creer/MAJ quiz",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"titre\": \"Quiz test\",\n  \"scoreMinimum\": 60,\n  \"tempsLimiteMinutes\": 10\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/quiz/contenu/1", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/quiz/contenu/1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ABONNEMENTS",
+      "item": [
+        { "name": "Types abonnement", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/abonnements/types", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/abonnements/types" }] } } },
+        { "name": "Liste", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/abonnements", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/abonnements" }] } } },
+        {
+          "name": "Souscrire",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"enfantId\": 1, \"typeAbonnementId\": 1}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/abonnements", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/abonnements" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PAIEMENTS",
+      "item": [
+        { "name": "Liste", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/paiements", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/paiements" }] } } },
+        { "name": "Rembourser", "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/?route=/api/paiements/1/rembourser", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/paiements/1/rembourser" }] } } }
+      ]
+    },
+    {
+      "name": "NOTIFICATIONS",
+      "item": [
+        { "name": "Liste", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/notifications", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/notifications" }] } } },
+        {
+          "name": "Broadcast",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"titre\": \"Annonce\",\n  \"message\": \"...\",\n  \"cible\": \"tous\"\n}" },
+            "url": { "raw": "{{baseUrl}}/?route=/api/notifications/broadcast", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/notifications/broadcast" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMIN",
+      "item": [
+        { "name": "Dashboard", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/admin/dashboard", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/admin/dashboard" }] } } },
+        { "name": "Stats utilisateurs", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/admin/statistiques/utilisateurs", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/admin/statistiques/utilisateurs" }] } } },
+        { "name": "Roles", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/admin/roles", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/admin/roles" }] } } },
+        { "name": "Journal d'audit", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/admin/journal", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/admin/journal" }] } } }
+      ]
+    },
+    {
+      "name": "STREAM (medias)",
+      "item": [
+        { "name": "Stream contenu", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "{{baseUrl}}/?route=/api/stream/contenus/1/media/video.mp4", "host": ["{{baseUrl}}"], "query": [{ "key": "route", "value": "/api/stream/contenus/1/media/video.mp4" }] } } }
+      ]
+    }
+  ]
+}

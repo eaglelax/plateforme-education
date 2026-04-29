@@ -32,8 +32,6 @@ api.interceptors.request.use(
     const originalUrl = config.url || '';
     config.url = buildUrl(originalUrl);
 
-    console.log('[API] Request:', config.method?.toUpperCase(), config.url);
-
     // Ne pas envoyer de token pour login/register
     const isAuthRoute = originalUrl.includes('/auth/login') || originalUrl.includes('/auth/register');
 
@@ -62,10 +60,33 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Intercepteur pour gerer les erreurs
+// Intercepteur pour gerer les erreurs (auto-logout sur 401)
+let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error)
+  (error) => {
+    const status = error.response?.status;
+
+    // 401 = token invalide / expire -> purger et rediriger vers login
+    if (status === 401 && !isRedirecting) {
+      const requestUrl = error.config?.url || '';
+      const isAuthRoute = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+
+      if (!isAuthRoute) {
+        isRedirecting = true;
+        localStorage.removeItem('token');
+        localStorage.removeItem('admin-token');
+        localStorage.removeItem('admin-user');
+        localStorage.removeItem('user');
+
+        // Petit delai pour eviter race condition multi-requetes
+        setTimeout(() => {
+          window.location.href = '/admin/login?expired=1';
+        }, 100);
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 // ============================================
@@ -114,6 +135,8 @@ export const abonnementService = {
   souscrire: (enfantId, typeAbonnementId) => api.post('/abonnements', { enfantId, typeAbonnementId }),
   toggleRenouvellement: (id, actif) => api.put(`/abonnements/${id}/renouvellement`, { actif }),
   annuler: (id, motif) => api.post(`/abonnements/${id}/annuler`, { motif }),
+  createType: (data) => api.post('/abonnements/types', data),
+  updateType: (id, data) => api.put(`/abonnements/types/${id}`, data),
 };
 
 // ============================================
@@ -130,6 +153,7 @@ export const contenuService = {
   update: (id, data) => api.put(`/contenus/${id}`, data),
   delete: (id) => api.delete(`/contenus/${id}`),
   publier: (id) => api.put(`/contenus/${id}/publier`),
+  archiver: (id) => api.put(`/contenus/${id}`, { statut: 'archive' }),
   createDomaine: (data) => api.post('/contenus/domaines', data),
   updateDomaine: (id, data) => api.put(`/contenus/domaines/${id}`, data),
 };
@@ -226,6 +250,8 @@ export const notificationService = {
   getAll: () => api.get('/notifications'),
   marquerLue: (id) => api.put(`/notifications/${id}/lue`),
   marquerToutesLues: () => api.put('/notifications/lues'),
+  envoyer: (data) => api.post('/notifications/envoyer', data),
+  broadcast: (data) => api.post('/notifications/broadcast', data),
 };
 
 // ============================================
@@ -261,8 +287,9 @@ export const historiqueService = {
 // SERVICES PAIEMENT
 // ============================================
 export const paiementService = {
-  getAll: () => api.get('/paiements'),
+  getAll: (params) => api.get('/paiements', { params }),
   getById: (id) => api.get(`/paiements/${id}`),
+  rembourser: (id) => api.post(`/paiements/${id}/rembourser`),
   initier: (data) => {
     // Adapter les noms de champs pour l'API
     const payload = {

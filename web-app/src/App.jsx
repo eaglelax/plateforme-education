@@ -5,24 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './styles/index.css';
 
 // Components
-import Layout from './components/layout/Layout';
 import AdminLayout from './components/layout/AdminLayout';
-import ProtectedRoute from './components/common/ProtectedRoute';
 import AdminProtectedRoute from './components/common/AdminProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
-
-// Pages Parent
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Enfants from './pages/Enfants';
-import NouvelEnfant from './pages/NouvelEnfant';
-import EnfantDetail from './pages/EnfantDetail';
-import EnfantParametres from './pages/EnfantParametres';
-import ModifierEnfant from './pages/ModifierEnfant';
-import Abonnements from './pages/Abonnements';
-import Contenus from './pages/Contenus';
-import Notifications from './pages/Notifications';
 
 // Pages Admin
 import AdminLogin from './pages/admin/AdminLogin';
@@ -38,6 +23,8 @@ import Statistiques from './pages/admin/Statistiques';
 import GestionDomaines from './pages/admin/GestionDomaines';
 import JournalAudit from './pages/admin/JournalAudit';
 import AdminNotifications from './pages/admin/AdminNotifications';
+import ParametresPlateforme from './pages/admin/ParametresPlateforme';
+import GestionEnfants from './pages/admin/GestionEnfants';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,29 +41,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <Routes>
-            {/* ===== ESPACE PARENT ===== */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="enfants" element={<Enfants />} />
-              <Route path="enfants/nouveau" element={<NouvelEnfant />} />
-              <Route path="enfants/:id" element={<EnfantDetail />} />
-              <Route path="enfants/:id/parametres" element={<EnfantParametres />} />
-              <Route path="enfants/:id/modifier" element={<ModifierEnfant />} />
-              <Route path="abonnements" element={<Abonnements />} />
-              <Route path="contenus" element={<Contenus />} />
-              <Route path="notifications" element={<Notifications />} />
-            </Route>
+            {/* Redirection racine vers admin */}
+            <Route path="/" element={<Navigate to="/admin/login" replace />} />
+            <Route path="/login" element={<Navigate to="/admin/login" replace />} />
 
             {/* ===== ESPACE ADMINISTRATEUR ===== */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -103,10 +70,12 @@ function App() {
               <Route path="domaines" element={<GestionDomaines />} />
               <Route path="journal" element={<JournalAudit />} />
               <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="parametres" element={<ParametresPlateforme />} />
+              <Route path="enfants" element={<GestionEnfants />} />
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/admin/login" replace />} />
           </Routes>
         </Router>
       </QueryClientProvider>

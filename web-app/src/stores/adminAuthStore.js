@@ -19,35 +19,20 @@ const useAdminAuthStore = create(
           const response = await authService.login(credentials);
           const responseData = response.data;
 
-          console.log('=== Admin Login Debug ===');
-          console.log('Response:', response);
-          console.log('ResponseData:', responseData);
-
           const token = responseData.data?.accessToken || responseData.data?.token || responseData.accessToken || responseData.token;
           const user = responseData.data?.utilisateur || responseData.utilisateur;
 
-          console.log('Token:', token ? 'OK' : 'MISSING');
-          console.log('User:', user);
-
-          // Verifier que c'est un admin
-          let role = typeof user?.role === 'object' ? user?.role?.libelle : user?.role;
           // Normaliser le role (trim + uppercase)
+          let role = typeof user?.role === 'object' ? user?.role?.libelle : user?.role;
           role = role ? String(role).trim().toUpperCase() : '';
 
-          console.log('Role extrait:', role);
-          console.log('ADMIN_ROLES:', ADMIN_ROLES);
-          console.log('Role inclus?:', ADMIN_ROLES.includes(role));
-
           if (!ADMIN_ROLES.includes(role)) {
-            console.log('ACCES REFUSE - role non reconnu');
             set({ isLoading: false });
             return {
               success: false,
-              error: 'Acces refuse. Ce portail est reserve aux administrateurs.'
+              error: 'Acces refuse. Ce portail est reserve aux administrateurs, gestionnaires et validateurs.'
             };
           }
-
-          console.log('ACCES AUTORISE');
 
           localStorage.setItem('admin-token', token);
 
@@ -85,17 +70,16 @@ const useAdminAuthStore = create(
 
       getRole: () => {
         const user = get().user;
-        return typeof user?.role === 'object' ? user?.role?.libelle : user?.role;
+        const role = typeof user?.role === 'object' ? user?.role?.libelle : user?.role;
+        return role ? String(role).trim().toUpperCase() : '';
       },
 
       isAdmin: () => {
-        const role = get().getRole();
-        return role === 'ADMIN';
+        return get().getRole() === 'ADMIN';
       },
 
       hasAccess: () => {
-        const role = get().getRole();
-        return ADMIN_ROLES.includes(role);
+        return ADMIN_ROLES.includes(get().getRole());
       },
     }),
     {

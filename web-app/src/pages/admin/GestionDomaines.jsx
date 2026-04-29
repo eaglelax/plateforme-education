@@ -147,6 +147,17 @@ function GestionDomaines() {
                 <td>{d.contenus_count ?? d.count ?? '-'}</td>
                 <td className="actions-cell">
                   <button className="btn-icon" title="Modifier" onClick={() => handleEdit(d)}><FiEdit2 /></button>
+                  <button className="btn-icon" title="Desactiver" style={{ color: '#EF4444' }} onClick={async () => {
+                    if (!confirm(`Desactiver le domaine "${d.nom}" ? Il sera masque mais les contenus associes ne seront pas supprimes.`)) return;
+                    try {
+                      await contenuService.updateDomaine(d.id, { estActif: false });
+                      setSuccess('Domaine desactive');
+                      fetchDomaines();
+                      setTimeout(() => setSuccess(''), 3000);
+                    } catch (err) {
+                      setError(err.response?.data?.message || 'Erreur lors de la suppression');
+                    }
+                  }}><FiTrash2 /></button>
                 </td>
               </tr>
             ))}

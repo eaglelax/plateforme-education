@@ -613,6 +613,22 @@ function NouveauContenu() {
                 </div>
 
                 <div className="form-group">
+                  <label htmlFor="niveauId">Niveau</label>
+                  <select
+                    id="niveauId"
+                    name="niveauId"
+                    className="form-select"
+                    value={formData.niveauId}
+                    onChange={handleChange}
+                  >
+                    <option value="">Aucun (tous niveaux)</option>
+                    <option value="1">Niveau 1 - Debutant</option>
+                    <option value="2">Niveau 2 - Intermediaire</option>
+                    <option value="3">Niveau 3 - Avance</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
                   <label htmlFor="pointsXp">Points XP</label>
                   <input
                     type="number"
