@@ -2,11 +2,26 @@ import * as ftp from "basic-ftp";
 import fs from "fs";
 import path from "path";
 
-const HOST = "ftp.genius-universe.com";
-const USER = "edo@genius-universe.com";
-const PASS = "EducPlatform2024BurkinaFaso";
+// Charger .env du repo racine si present
+const envPath = path.resolve(".env");
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
+    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+    if (m) process.env[m[1]] = m[2].trim();
+  }
+}
+
+const HOST = process.env.FTP_HOST || "ftp.genius-universe.com";
+const USER = process.env.FTP_USER_WEB || "edo@genius-universe.com";
+const PASS = process.env.FTP_PASS_WEB;
 const LOCAL_DIR = "./web-app/dist";
 const REMOTE_DIR = "/";
+
+if (!PASS) {
+  console.error("[ERREUR] FTP_PASS_WEB manquant.");
+  console.error("Ajoute FTP_PASS_WEB=xxx dans .env (a la racine) ou en variable d'environnement.");
+  process.exit(1);
+}
 
 async function deploy() {
   const client = new ftp.Client(60000);

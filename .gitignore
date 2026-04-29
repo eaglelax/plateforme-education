@@ -1,9 +1,47 @@
+# Dependencies
 node_modules/
+
+# Environment & secrets
 .env
-*.log
-uploads/
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets.json
+credentials.json
+
+# Build artefacts
 dist/
+*.zip
+build/
+
+# Uploads & user data
+uploads/
+captures/*.png
+
+# Backup files
+*_backup.*
+*_temp.*
+app_backup.js
+app_temp.js
+
+# Media
+tmp_video.*
+*.mp4
+*.mov
+
+# Logs
+*.log
+
+# OS
 .DS_Store
-image.png
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Misc
 nul
-web-app-dist.zip
+"image copy*.png"
