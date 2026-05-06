@@ -522,14 +522,17 @@ Tous les endpoints `GET` listant des ressources acceptent :
 
 | Méthode | URL | Auth | Description |
 |---------|-----|------|-------------|
-| GET | `/api/abonnements/types` | Public | Liste des formules |
+| GET | `/api/abonnements/types` | Public | Liste des formules (avec domaines depuis amendement #10) |
 | GET | `/api/abonnements` | Privé | Liste (parent: les siens; admin: tous) |
 | GET | `/api/abonnements/:id` | Privé | Détail |
-| POST | `/api/abonnements` | Parent | Souscrire |
+| POST | `/api/abonnements` | Parent | Souscrire (snapshot domaines auto) |
 | PUT | `/api/abonnements/:id/renouvellement` | Parent | Toggle renouvellement |
 | POST | `/api/abonnements/:id/annuler` | Parent | Annuler avec motif |
-| POST | `/api/abonnements/types` | Admin | Créer formule |
+| POST | `/api/abonnements/types` | Admin | Créer formule (avec `domaineIds`) |
 | PUT | `/api/abonnements/types/:id` | Admin | Modifier formule |
+| **GET** | **`/api/abonnements/types/:id/domaines`** | **Privé** | **Domaines d'un pack (template)** |
+| **PUT** | **`/api/abonnements/types/:id/domaines`** | **Admin** | **Configurer domaines d'un pack** |
+| **GET** | **`/api/abonnements/:id/domaines`** | **Privé** | **Domaines snapshot d'un abonnement actif** |
 
 ### GET `/api/abonnements/types`
 
@@ -562,6 +565,35 @@ Tous les endpoints `GET` listant des ressources acceptent :
   "typeAbonnementId": 4
 }
 ```
+
+> **Amendement #10** : à la souscription, les domaines actuels du pack sont copiés vers `abonnement_domaines`. Les modifications ultérieures du pack n'affectent pas cet abonnement.
+
+### Amendement #10 : Domaines par pack
+
+**`GET /api/abonnements/types`** retourne désormais un champ `domaines` pour chaque pack :
+
+```json
+{
+  "id": 4,
+  "nom": "Premium Annuel",
+  "prix": "40000.00",
+  "duree": "ANNUEL",
+  "domaines": [
+    { "id": 1, "nom": "Langues", "icone": "🗣️", "couleur": "#3498db" },
+    { "id": 2, "nom": "Mathématiques", "icone": "🔢", "couleur": "#e74c3c" }
+  ]
+}
+```
+
+**`PUT /api/abonnements/types/:id/domaines`** (Admin)
+```json
+{ "domaineIds": [1, 2, 5, 6] }
+```
+> Remplace toute la liste actuelle. `[]` = pack non configuré → fallback "tous les domaines".
+
+**`GET /api/abonnements/:id/domaines`** — domaines réellement accessibles pour cet abonnement (snapshot, ne change pas même si pack modifié).
+
+**Filtrage automatique du catalogue :** quand un enfant authentifié appelle `GET /api/contenus`, le serveur filtre automatiquement par les domaines de son abonnement actif. Aucun paramètre côté client.
 
 ---
 

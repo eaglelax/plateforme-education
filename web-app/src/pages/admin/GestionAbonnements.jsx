@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { FiPackage, FiSearch, FiEye, FiRefreshCw, FiAlertCircle, FiX, FiUser, FiCalendar, FiCreditCard, FiPlus, FiEdit2, FiCheck } from 'react-icons/fi';
-import { abonnementService } from '../../services/api';
+import { FiPackage, FiEye, FiRefreshCw, FiAlertCircle, FiX, FiUser, FiCalendar, FiCreditCard, FiPlus, FiEdit2, FiCheck, FiGrid } from 'react-icons/fi';
+import { abonnementService, contenuService } from '../../services/api';
 import './AdminPages.css';
 import './GestionAbonnements.css';
 
 function GestionAbonnements() {
   const [abonnements, setAbonnements] = useState([]);
   const [types, setTypes] = useState([]);
+  const [domaines, setDomaines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -16,7 +17,10 @@ function GestionAbonnements() {
   const [showModal, setShowModal] = useState(false);
   const [showTypeForm, setShowTypeForm] = useState(false);
   const [editTypeId, setEditTypeId] = useState(null);
-  const [typeForm, setTypeForm] = useState({ nom: '', description: '', prix: '', duree_jours: '', nombre_appareils: 1, telechargement: false, contenu_premium: false });
+  const [typeForm, setTypeForm] = useState({ nom: '', description: '', prix: '', duree: 'MENSUEL', nombreAppareilsMax: 1, domaineIds: [] });
+  const [showDomainsModal, setShowDomainsModal] = useState(false);
+  const [domainsType, setDomainsType] = useState(null);
+  const [selectedDomainIds, setSelectedDomainIds] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -25,16 +29,18 @@ function GestionAbonnements() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [abonnementsRes, typesRes] = await Promise.all([
+      const [abonnementsRes, typesRes, domainesRes] = await Promise.all([
         abonnementService.getAll({
           page: pagination.page,
           limit: pagination.limit,
           statut: filterStatut || undefined
         }),
-        abonnementService.getTypes()
+        abonnementService.getTypes(),
+        contenuService.getDomaines()
       ]);
       setAbonnements(abonnementsRes.data?.data || []);
       setTypes(typesRes.data?.data || []);
+      setDomaines(domainesRes.data?.data || []);
       if (abonnementsRes.data?.pagination) {
         setPagination(prev => ({ ...prev, total: abonnementsRes.data.pagination.total }));
       }
@@ -48,13 +54,22 @@ function GestionAbonnements() {
 
   const handleTypeSubmit = async (e) => {
     e.preventDefault();
-    if (!typeForm.nom.trim() || !typeForm.prix || !typeForm.duree_jours) {
-      setError('Nom, prix et duree sont requis'); return;
+    if (!typeForm.nom.trim() || !typeForm.prix) {
+      setError('Nom et prix sont requis'); return;
     }
     try {
-      const payload = { ...typeForm, prix: parseInt(typeForm.prix), duree_jours: parseInt(typeForm.duree_jours), nombre_appareils: parseInt(typeForm.nombre_appareils) };
+      const payload = {
+        nom: typeForm.nom,
+        description: typeForm.description,
+        prix: parseFloat(typeForm.prix),
+        duree: typeForm.duree,
+        nombreAppareilsMax: parseInt(typeForm.nombreAppareilsMax) || 1,
+        domaineIds: typeForm.domaineIds
+      };
       if (editTypeId) {
         await abonnementService.updateType(editTypeId, payload);
+        // MAJ des domaines (separe car endpoint dedie)
+        await abonnementService.setPackDomaines(editTypeId, typeForm.domaineIds);
         setSuccess('Type modifie avec succes');
       } else {
         await abonnementService.createType(payload);
@@ -68,22 +83,72 @@ function GestionAbonnements() {
     }
   };
 
-  const editType = (type) => {
+  const editType = async (type) => {
     setEditTypeId(type.id);
+    let domaineIds = (type.domaines || []).map(d => d.id);
+    if (domaineIds.length === 0) {
+      // Charger les domaines depuis l'endpoint dedie au cas ou
+      try {
+        const res = await abonnementService.getPackDomaines(type.id);
+        domaineIds = (res.data?.data || []).map(d => d.id);
+      } catch (e) { /* ignore */ }
+    }
     setTypeForm({
-      nom: type.nom || '', description: type.description || '',
-      prix: type.prix || '', duree_jours: type.duree_jours || '',
-      nombre_appareils: type.nombre_appareils || 1,
-      telechargement: type.telechargement || false,
-      contenu_premium: type.contenu_premium || false,
+      nom: type.nom || '',
+      description: type.description || '',
+      prix: type.prix || '',
+      duree: type.duree || 'MENSUEL',
+      nombreAppareilsMax: type.nombre_appareils_max || 1,
+      domaineIds
     });
     setShowTypeForm(true);
   };
 
   const resetTypeForm = () => {
     setEditTypeId(null);
-    setTypeForm({ nom: '', description: '', prix: '', duree_jours: '', nombre_appareils: 1, telechargement: false, contenu_premium: false });
+    setTypeForm({ nom: '', description: '', prix: '', duree: 'MENSUEL', nombreAppareilsMax: 1, domaineIds: [] });
     setShowTypeForm(false);
+  };
+
+  const toggleDomainInForm = (domaineId) => {
+    setTypeForm(prev => ({
+      ...prev,
+      domaineIds: prev.domaineIds.includes(domaineId)
+        ? prev.domaineIds.filter(id => id !== domaineId)
+        : [...prev.domaineIds, domaineId]
+    }));
+  };
+
+  const openDomainsModal = async (type) => {
+    setDomainsType(type);
+    try {
+      const res = await abonnementService.getPackDomaines(type.id);
+      setSelectedDomainIds((res.data?.data || []).map(d => d.id));
+    } catch (err) {
+      setSelectedDomainIds([]);
+    }
+    setShowDomainsModal(true);
+  };
+
+  const toggleDomainModal = (domaineId) => {
+    setSelectedDomainIds(prev =>
+      prev.includes(domaineId)
+        ? prev.filter(id => id !== domaineId)
+        : [...prev, domaineId]
+    );
+  };
+
+  const saveDomainsConfig = async () => {
+    if (!domainsType) return;
+    try {
+      await abonnementService.setPackDomaines(domainsType.id, selectedDomainIds);
+      setSuccess(`${selectedDomainIds.length} domaine(s) configure(s) pour ${domainsType.nom}`);
+      setShowDomainsModal(false);
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde');
+    }
   };
 
   const getStatusBadge = (statut) => {
@@ -97,11 +162,7 @@ function GestionAbonnements() {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+    return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
   const formatPrice = (price) => {
@@ -126,7 +187,7 @@ function GestionAbonnements() {
           <FiPackage className="header-icon" />
           <div>
             <h1>Gestion des abonnements</h1>
-            <p>Suivez et gerez les abonnements des utilisateurs</p>
+            <p>Gerez les packs et leurs domaines inclus</p>
           </div>
         </div>
       </div>
@@ -145,51 +206,66 @@ function GestionAbonnements() {
       {/* Types d'abonnements */}
       <div className="types-overview">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0 }}>Types d'abonnements</h3>
+          <h3 style={{ margin: 0 }}>Packs d'abonnement</h3>
           <button className="btn btn-primary btn-sm" onClick={() => { resetTypeForm(); setShowTypeForm(true); }}>
-            <FiPlus /> Nouveau type
+            <FiPlus /> Nouveau pack
           </button>
         </div>
 
         {showTypeForm && (
           <div className="form-card" style={{ marginBottom: '1rem' }}>
-            <h3>{editTypeId ? 'Modifier le type' : 'Nouveau type d\'abonnement'}</h3>
+            <h3>{editTypeId ? 'Modifier le pack' : 'Nouveau pack d\'abonnement'}</h3>
             <form onSubmit={handleTypeSubmit}>
               <div className="form-row">
                 <div className="form-group">
                   <label>Nom *</label>
-                  <input type="text" className="form-input" value={typeForm.nom} onChange={(e) => setTypeForm(p => ({ ...p, nom: e.target.value }))} placeholder="Ex: Premium Mensuel" />
+                  <input type="text" className="form-input" value={typeForm.nom} onChange={(e) => setTypeForm(p => ({ ...p, nom: e.target.value }))} placeholder="Ex: Pack Premium Mensuel" />
                 </div>
                 <div className="form-group">
                   <label>Prix (FCFA) *</label>
                   <input type="number" className="form-input" value={typeForm.prix} onChange={(e) => setTypeForm(p => ({ ...p, prix: e.target.value }))} placeholder="5000" min="0" />
                 </div>
                 <div className="form-group">
-                  <label>Duree (jours) *</label>
-                  <input type="number" className="form-input" value={typeForm.duree_jours} onChange={(e) => setTypeForm(p => ({ ...p, duree_jours: e.target.value }))} placeholder="30" min="1" />
+                  <label>Duree *</label>
+                  <select className="form-input" value={typeForm.duree} onChange={(e) => setTypeForm(p => ({ ...p, duree: e.target.value }))}>
+                    <option value="MENSUEL">Mensuel (30 jours)</option>
+                    <option value="TRIMESTRIEL">Trimestriel (90 jours)</option>
+                    <option value="ANNUEL">Annuel (365 jours)</option>
+                  </select>
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
                   <label>Description</label>
-                  <input type="text" className="form-input" value={typeForm.description} onChange={(e) => setTypeForm(p => ({ ...p, description: e.target.value }))} placeholder="Description du plan" />
+                  <input type="text" className="form-input" value={typeForm.description} onChange={(e) => setTypeForm(p => ({ ...p, description: e.target.value }))} placeholder="Description du pack" />
                 </div>
                 <div className="form-group">
                   <label>Appareils max</label>
-                  <input type="number" className="form-input" value={typeForm.nombre_appareils} onChange={(e) => setTypeForm(p => ({ ...p, nombre_appareils: e.target.value }))} min="1" max="10" />
+                  <input type="number" className="form-input" value={typeForm.nombreAppareilsMax} onChange={(e) => setTypeForm(p => ({ ...p, nombreAppareilsMax: e.target.value }))} min="1" max="10" />
                 </div>
               </div>
-              <div className="form-row checkboxes" style={{ marginBottom: '1rem' }}>
-                <label className="checkbox-label">
-                  <input type="checkbox" checked={typeForm.telechargement} onChange={(e) => setTypeForm(p => ({ ...p, telechargement: e.target.checked }))} />
-                  <span>Telechargement hors ligne</span>
-                </label>
-                <label className="checkbox-label">
-                  <input type="checkbox" checked={typeForm.contenu_premium} onChange={(e) => setTypeForm(p => ({ ...p, contenu_premium: e.target.checked }))} />
-                  <span>Acces contenu premium</span>
-                </label>
+
+              {/* Domaines inclus */}
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <label><FiGrid style={{ marginRight: 6 }} />Domaines inclus dans ce pack ({typeForm.domaineIds.length}/{domaines.length})</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: '#F9FAFB', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  {domaines.map(d => (
+                    <label key={d.id} className="checkbox-label" style={{ background: 'white', padding: '6px 10px', borderRadius: '6px', border: '1px solid #E5E7EB', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={typeForm.domaineIds.includes(d.id)}
+                        onChange={() => toggleDomainInForm(d.id)}
+                      />
+                      <span style={{ marginLeft: 6 }}>{d.icone} {d.nom}</span>
+                    </label>
+                  ))}
+                </div>
+                <small style={{ color: '#6B7280', marginTop: 4, display: 'block' }}>
+                  Si aucun domaine n'est selectionne, les abonnes auront acces a tous les domaines (transition douce).
+                </small>
               </div>
-              <div className="form-actions">
+
+              <div className="form-actions" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={resetTypeForm}><FiX /> Annuler</button>
                 <button type="submit" className="btn btn-primary"><FiCheck /> {editTypeId ? 'Modifier' : 'Creer'}</button>
               </div>
@@ -199,13 +275,32 @@ function GestionAbonnements() {
 
         <div className="types-grid">
           {types.map((type) => (
-            <div key={type.id} className="type-card">
+            <div key={type.id} className="type-card" style={{ position: 'relative' }}>
               <h4>{type.nom}</h4>
               <p className="price">{formatPrice(type.prix)}</p>
               <p className="duration">{type.duree_jours} jours</p>
-              <button className="btn-icon" title="Modifier" onClick={() => editType(type)} style={{ position: 'absolute', top: 8, right: 8 }}>
-                <FiEdit2 />
-              </button>
+              <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#6B7280' }}>
+                <FiGrid style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                {(type.domaines || []).length === 0
+                  ? 'Tous domaines (par defaut)'
+                  : `${type.domaines.length} domaine(s)`}
+              </div>
+              {type.domaines && type.domaines.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: '0.75rem' }}>
+                  {type.domaines.slice(0, 3).map(d => (
+                    <span key={d.id} style={{ display: 'inline-block', marginRight: 4, padding: '2px 6px', background: '#EEF2FF', borderRadius: 4 }}>{d.icone} {d.nom}</span>
+                  ))}
+                  {type.domaines.length > 3 && <span style={{ color: '#6B7280' }}>+{type.domaines.length - 3}</span>}
+                </div>
+              )}
+              <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: '4px' }}>
+                <button className="btn-icon" title="Configurer domaines" onClick={() => openDomainsModal(type)}>
+                  <FiGrid />
+                </button>
+                <button className="btn-icon" title="Modifier" onClick={() => editType(type)}>
+                  <FiEdit2 />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -246,24 +341,18 @@ function GestionAbonnements() {
           </thead>
           <tbody>
             {abonnements.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="empty-cell">
-                  Aucun abonnement trouve
-                </td>
-              </tr>
+              <tr><td colSpan="7" className="empty-cell">Aucun abonnement trouve</td></tr>
             ) : (
               abonnements.map((abo) => (
                 <tr key={abo.id}>
-                  <td>
-                    <strong>{abo.enfant_nom || abo.nom_pseudo}</strong>
-                  </td>
-                  <td>{abo.type_nom || abo.type_abonnement}</td>
-                  <td>{formatDate(abo.date_debut)}</td>
-                  <td>{formatDate(abo.date_fin)}</td>
+                  <td><strong>{abo.enfant?.nom || abo.enfant_nom || abo.nom_pseudo}</strong></td>
+                  <td>{abo.type?.nom || abo.type_nom || abo.type_abonnement}</td>
+                  <td>{formatDate(abo.dateDebut || abo.date_debut)}</td>
+                  <td>{formatDate(abo.dateFin || abo.date_fin)}</td>
                   <td>{getStatusBadge(abo.statut)}</td>
                   <td>
-                    <span className={abo.renouvellement_auto ? 'text-success' : 'text-muted'}>
-                      {abo.renouvellement_auto ? 'Oui' : 'Non'}
+                    <span className={(abo.renouvellementAuto || abo.renouvellement_auto) ? 'text-success' : 'text-muted'}>
+                      {(abo.renouvellementAuto || abo.renouvellement_auto) ? 'Oui' : 'Non'}
                     </span>
                   </td>
                   <td className="actions-cell">
@@ -280,21 +369,12 @@ function GestionAbonnements() {
 
       {pagination.total > pagination.limit && (
         <div className="pagination">
-          <button
-            disabled={pagination.page === 1}
-            onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-          >
-            Precedent
-          </button>
+          <button disabled={pagination.page === 1} onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}>Precedent</button>
           <span>Page {pagination.page} sur {Math.ceil(pagination.total / pagination.limit)}</span>
-          <button
-            disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-            onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-          >
-            Suivant
-          </button>
+          <button disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)} onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}>Suivant</button>
         </div>
       )}
+
       {/* Modal Detail Abonnement */}
       {showModal && selectedAbo && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -307,59 +387,73 @@ function GestionAbonnements() {
               <div className="detail-grid">
                 <div className="detail-item">
                   <FiUser className="detail-icon" />
-                  <div>
-                    <label>Enfant</label>
-                    <span>{selectedAbo.enfant_nom || selectedAbo.nom_pseudo || 'N/A'}</span>
-                  </div>
+                  <div><label>Enfant</label><span>{selectedAbo.enfant?.nom || selectedAbo.enfant_nom || 'N/A'}</span></div>
                 </div>
                 <div className="detail-item">
                   <FiPackage className="detail-icon" />
-                  <div>
-                    <label>Type d'abonnement</label>
-                    <span>{selectedAbo.type_nom || selectedAbo.type_abonnement}</span>
-                  </div>
+                  <div><label>Type d'abonnement</label><span>{selectedAbo.type?.nom || selectedAbo.type_nom}</span></div>
                 </div>
                 <div className="detail-item">
                   <FiCalendar className="detail-icon" />
-                  <div>
-                    <label>Date de debut</label>
-                    <span>{formatDate(selectedAbo.date_debut)}</span>
-                  </div>
+                  <div><label>Debut</label><span>{formatDate(selectedAbo.dateDebut || selectedAbo.date_debut)}</span></div>
                 </div>
                 <div className="detail-item">
                   <FiCalendar className="detail-icon" />
-                  <div>
-                    <label>Date de fin</label>
-                    <span>{formatDate(selectedAbo.date_fin)}</span>
-                  </div>
+                  <div><label>Fin</label><span>{formatDate(selectedAbo.dateFin || selectedAbo.date_fin)}</span></div>
                 </div>
                 <div className="detail-item">
-                  <div>
-                    <label>Statut</label>
-                    {getStatusBadge(selectedAbo.statut)}
-                  </div>
+                  <div><label>Statut</label>{getStatusBadge(selectedAbo.statut)}</div>
                 </div>
                 <div className="detail-item">
                   <div>
                     <label>Renouvellement automatique</label>
-                    <span className={selectedAbo.renouvellement_auto ? 'text-success' : 'text-muted'}>
-                      {selectedAbo.renouvellement_auto ? 'Actif' : 'Desactive'}
+                    <span className={(selectedAbo.renouvellementAuto || selectedAbo.renouvellement_auto) ? 'text-success' : 'text-muted'}>
+                      {(selectedAbo.renouvellementAuto || selectedAbo.renouvellement_auto) ? 'Actif' : 'Desactive'}
                     </span>
                   </div>
                 </div>
-                {selectedAbo.montant && (
-                  <div className="detail-item">
-                    <FiCreditCard className="detail-icon" />
-                    <div>
-                      <label>Montant</label>
-                      <span>{formatPrice(selectedAbo.montant)}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Configuration domaines */}
+      {showDomainsModal && domainsType && (
+        <div className="modal-overlay" onClick={() => setShowDomainsModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><FiGrid style={{ marginRight: 8 }} />Domaines : {domainsType.nom}</h3>
+              <button className="modal-close" onClick={() => setShowDomainsModal(false)}><FiX /></button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: '#6B7280', marginBottom: 12 }}>
+                Selectionnez les domaines inclus dans ce pack. Les abonnements deja actifs ne seront pas affectes (snapshot a la souscription).
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
+                {domaines.map(d => (
+                  <label key={d.id} className="checkbox-label" style={{ background: selectedDomainIds.includes(d.id) ? '#EEF2FF' : 'white', padding: '10px 12px', borderRadius: '8px', border: `1px solid ${selectedDomainIds.includes(d.id) ? '#6366F1' : '#E5E7EB'}`, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedDomainIds.includes(d.id)}
+                      onChange={() => toggleDomainModal(d.id)}
+                    />
+                    <span style={{ marginLeft: 8 }}>{d.icone} {d.nom}</span>
+                  </label>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, padding: 8, background: '#FEF3C7', borderRadius: 6, color: '#92400E', fontSize: '0.85rem' }}>
+                {selectedDomainIds.length === 0
+                  ? '⚠ Aucun domaine selectionne : les nouveaux abonnes auront acces a tous les domaines (defaut).'
+                  : `${selectedDomainIds.length} domaine(s) selectionne(s)`}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowDomainsModal(false)}>Annuler</button>
+              <button className="btn btn-primary" onClick={saveDomainsConfig}><FiCheck /> Sauvegarder</button>
             </div>
           </div>
         </div>

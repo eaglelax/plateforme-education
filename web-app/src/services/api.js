@@ -137,6 +137,10 @@ export const abonnementService = {
   annuler: (id, motif) => api.post(`/abonnements/${id}/annuler`, { motif }),
   createType: (data) => api.post('/abonnements/types', data),
   updateType: (id, data) => api.put(`/abonnements/types/${id}`, data),
+  // Amendement #10 : domaines par pack
+  getPackDomaines: (typeId) => api.get(`/abonnements/types/${typeId}/domaines`),
+  setPackDomaines: (typeId, domaineIds) => api.put(`/abonnements/types/${typeId}/domaines`, { domaineIds }),
+  getAbonnementDomaines: (id) => api.get(`/abonnements/${id}/domaines`),
 };
 
 // ============================================

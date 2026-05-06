@@ -133,4 +133,45 @@ router.put('/:id/statut',
   abonnementController.changeStatut
 );
 
+// ============================================
+// ROUTES DOMAINES PAR PACK (Amendement #10)
+// ============================================
+
+/**
+ * @route   GET /api/abonnements/types/:id/domaines
+ * @desc    Lister les domaines inclus dans un pack
+ * @access  Private (tout utilisateur authentifie)
+ */
+router.get('/types/:id/domaines',
+  [param('id').isInt().withMessage('ID invalide')],
+  validate,
+  abonnementController.getPackDomaines
+);
+
+/**
+ * @route   PUT /api/abonnements/types/:id/domaines
+ * @desc    Configurer les domaines inclus dans un pack
+ * @access  Admin
+ */
+router.put('/types/:id/domaines',
+  adminOnly,
+  [
+    param('id').isInt().withMessage('ID invalide'),
+    body('domaineIds').isArray().withMessage('domaineIds doit etre un tableau')
+  ],
+  validate,
+  abonnementController.setPackDomaines
+);
+
+/**
+ * @route   GET /api/abonnements/:id/domaines
+ * @desc    Lister les domaines accessibles d'un abonnement (snapshot)
+ * @access  Private (proprietaire ou admin)
+ */
+router.get('/:id/domaines',
+  [param('id').isInt().withMessage('ID invalide')],
+  validate,
+  abonnementController.getAbonnementDomaines
+);
+
 module.exports = router;

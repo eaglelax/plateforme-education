@@ -17,7 +17,8 @@
 | 3 | Abonnement PAR ENFANT (pas 2 enfants sur meme tablette) | `Abonnement` lie a `Profil_Enfant` + `Session_Active` |
 | 4 | Telechargement automatique des contenus | `Contenu_Telecharge` + `Preference_Telechargement` |
 | 5 | Whitelist APK pour mode kiosque | `Application_Autorisee` + `Application_Enfant_Autorisee` |
-| **9** | **NOUVEAU: Compte enfant avec identifiants de connexion** | **`Profil_Enfant` + code_connexion, mot_de_passe, pin_simplifie** |
+| 9 | Compte enfant avec identifiants de connexion | `Profil_Enfant` + code_connexion, mot_de_passe, pin_simplifie |
+| **10** | **NOUVEAU (2026-04-29) : Domaines modulaires par pack d'abonnement + tout telechargeable** | **`Pack_Domaines` (N-N) + `Abonnement_Domaines` (snapshot)** |
 
 ---
 

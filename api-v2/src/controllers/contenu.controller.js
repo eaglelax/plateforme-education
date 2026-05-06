@@ -96,8 +96,32 @@ const getAll = asyncHandler(async (req, res) => {
     params.push(searchTerm, searchTerm);
   }
 
-  // Note: Filtrage par domaines autorises et par age desactive pour MVP
-  // Tous les contenus publies sont accessibles aux enfants
+  // Amendement #10 : si l'utilisateur est un enfant, filtrer par les domaines
+  // de son abonnement actif. Si pas de snapshot ou pas d'abonnement, fallback
+  // sur "tous les domaines" (option a, transition douce).
+  if (req.user && req.user.type === 'enfant') {
+    const [aboActif] = await query(
+      `SELECT a.id FROM abonnements a
+       WHERE a.enfant_id = ? AND a.statut IN ('actif','periode_grace')
+       ORDER BY a.date_fin DESC LIMIT 1`,
+      [req.user.id]
+    );
+
+    if (aboActif) {
+      const snapshot = await query(
+        'SELECT domaine_id FROM abonnement_domaines WHERE abonnement_id = ?',
+        [aboActif.id]
+      );
+      if (snapshot.length > 0) {
+        const ids = snapshot.map(s => s.domaine_id);
+        const placeholders = ids.map(() => '?').join(',');
+        whereClause += ` AND c.domaine_id IN (${placeholders})`;
+        params.push(...ids);
+      }
+      // Sinon : aucun snapshot configure -> aucun filtre (option a)
+    }
+    // Sinon : enfant sans abonnement -> aucun filtre supplementaire (vu publics)
+  }
 
   const [countResult] = await query(
     `SELECT COUNT(*) as total FROM contenus c WHERE ${whereClause}`,

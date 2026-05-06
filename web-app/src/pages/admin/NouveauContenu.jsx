@@ -674,27 +674,7 @@ function NouveauContenu() {
                 </div>
               </div>
 
-              <div className="form-row checkboxes">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="estPremium"
-                    checked={formData.estPremium}
-                    onChange={handleChange}
-                  />
-                  <span>Contenu Premium</span>
-                </label>
-
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="estTelechargeable"
-                    checked={formData.estTelechargeable}
-                    onChange={handleChange}
-                  />
-                  <span>Telechargeable</span>
-                </label>
-              </div>
+              {/* Amendement #10 : champs estPremium et estTelechargeable masques (toujours envoyes a true) */}
             </div>
 
             <div className="form-actions">
