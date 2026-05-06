@@ -42,9 +42,12 @@ function AdminLayout() {
   const isGestionnaireContenu = userRole === 'GESTIONNAIRE_CONTENU';
   const isValidateur = userRole === 'VALIDATEUR';
 
-  const canManageContent = hasAdminRole || isGestionnaireContenu;
+  // Admin = lecture seule sur les contenus / pas de creation, pas de validation
+  const canViewContent = hasAdminRole || isGestionnaireContenu; // accede a "Tous les contenus" en lecture
+  const canCreateContent = isGestionnaireContenu; // "Mes contenus" + Nouveau contenu
   const canManageDomains = hasAdminRole || isGestionnaireContenu;
-  const canValidate = hasAdminRole || isValidateur;
+  const canViewValidation = hasAdminRole || isValidateur; // admin voit la file en lecture
+  const canValidate = isValidateur; // boutons valider/amender (admin exclu)
   const canViewUsers = hasAdminRole;
   const canViewStats = hasAdminRole;
   const canViewPayments = hasAdminRole;
@@ -101,19 +104,19 @@ function AdminLayout() {
             <NavLink to="/admin/dashboard" icon={FiHome} label="Dashboard" />
           </div>
 
-          {canManageContent && (
+          {canViewContent && (
             <div className="sidebar-section">
               {!collapsed && <span className="sidebar-section-title">Contenus</span>}
               <NavLink to="/admin/contenus" icon={FiBook} label="Tous les contenus" />
-              <NavLink to="/admin/mes-contenus" icon={FiFolder} label="Mes contenus" />
+              {canCreateContent && <NavLink to="/admin/mes-contenus" icon={FiFolder} label="Mes contenus" />}
               {canManageDomains && <NavLink to="/admin/domaines" icon={FiGrid} label="Domaines" />}
             </div>
           )}
 
-          {canValidate && (
+          {canViewValidation && (
             <div className="sidebar-section">
               {!collapsed && <span className="sidebar-section-title">Validation</span>}
-              <NavLink to="/admin/validations" icon={FiCheckSquare} label="Validations" />
+              <NavLink to="/admin/validations" icon={FiCheckSquare} label={canValidate ? 'Validations' : 'File de validation'} />
             </div>
           )}
 

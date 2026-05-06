@@ -14,6 +14,7 @@ import {
   FiRefreshCw,
 } from 'react-icons/fi';
 import { validationService } from '../../services/api';
+import useAdminAuthStore from '../../stores/adminAuthStore';
 import './Validations.css';
 
 const TYPE_ICONS = {
@@ -39,6 +40,9 @@ const getMediaUrl = (relativePath) => {
 };
 
 function Validations() {
+  const { getRole } = useAdminAuthStore();
+  const userRole = getRole()?.toUpperCase() || '';
+  const canValidate = userRole === 'VALIDATEUR'; // Admin = lecture seule
   const [contenus, setContenus] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -336,8 +340,8 @@ function Validations() {
                       >
                         <FiEye />
                       </button>
-                      {/* Boutons validation uniquement pour contenus en_attente */}
-                      {contenu.statut === 'en_attente' && (
+                      {/* Boutons validation uniquement pour Validateur sur contenus en_attente (admin = lecture seule) */}
+                      {canValidate && contenu.statut === 'en_attente' && (
                         <>
                           <button
                             className="btn-action validate"

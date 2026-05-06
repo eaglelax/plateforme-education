@@ -23,10 +23,9 @@ if (!PASS) {
 // Liste des fichiers a uploader (chemin local => chemin distant)
 // Le serveur LWS a la structure : app.js, src/, package.json a la racine du compte FTP
 const FILES = [
-  ["api-v2/app.js", "app.js"],
-  ["api-v2/src/controllers/abonnement.controller.js", "src/controllers/abonnement.controller.js"],
   ["api-v2/src/controllers/contenu.controller.js", "src/controllers/contenu.controller.js"],
-  ["api-v2/src/routes/abonnement.routes.js", "src/routes/abonnement.routes.js"],
+  ["api-v2/src/middlewares/auth.js", "src/middlewares/auth.js"],
+  ["api-v2/src/routes/contenu.routes.js", "src/routes/contenu.routes.js"],
 ];
 
 async function deploy() {

@@ -163,14 +163,24 @@ const parentOrAdmin = authorize('PARENT', 'ADMIN');
 const enfantOnly = authorize('ENFANT');
 
 /**
- * Middleware validateur ou admin
+ * Middleware validateur ou admin (lecture)
  */
 const validateurOrAdmin = authorize('VALIDATEUR', 'ADMIN');
 
 /**
- * Middleware gestionnaire de contenu ou admin
+ * Middleware gestionnaire de contenu ou admin (lecture)
  */
 const gestionnaireOrAdmin = authorize('GESTIONNAIRE_CONTENU', 'ADMIN');
+
+/**
+ * Middleware validateur uniquement (actions de validation - admin exclu)
+ */
+const validateurOnly = authorize('VALIDATEUR');
+
+/**
+ * Middleware gestionnaire de contenu uniquement (creation/modif/suppression - admin exclu)
+ */
+const gestionnaireOnly = authorize('GESTIONNAIRE_CONTENU');
 
 /**
  * Middleware pour tous les roles admin (admin, validateur, gestionnaire)
@@ -187,5 +197,7 @@ module.exports = {
   enfantOnly,
   validateurOrAdmin,
   gestionnaireOrAdmin,
+  validateurOnly,
+  gestionnaireOnly,
   adminRoles
 };

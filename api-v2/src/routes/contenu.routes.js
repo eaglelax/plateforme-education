@@ -4,7 +4,7 @@ const router = express.Router();
 
 const contenuController = require('../controllers/contenu.controller');
 const validate = require('../middlewares/validate');
-const { authenticate, optionalAuth, adminOnly, enfantOnly, validateurOrAdmin, gestionnaireOrAdmin, adminRoles } = require('../middlewares/auth');
+const { authenticate, optionalAuth, adminOnly, enfantOnly, validateurOrAdmin, gestionnaireOrAdmin, validateurOnly, gestionnaireOnly, adminRoles } = require('../middlewares/auth');
 
 // ============================================
 // ROUTES PUBLIQUES / OPTIONNELLEMENT AUTHENTIFIEES
@@ -170,7 +170,7 @@ router.post('/:id/terminer',
  */
 router.put('/:id/valider',
   authenticate,
-  validateurOrAdmin,
+  validateurOnly,
   [
     param('id').isInt().withMessage('ID invalide'),
     body('commentaire').optional().isString()
@@ -182,11 +182,11 @@ router.put('/:id/valider',
 /**
  * @route   PUT /api/contenus/:id/amender
  * @desc    Renvoyer un contenu pour amendements (commentaire obligatoire)
- * @access  Validateur, Admin
+ * @access  Validateur (admin lecture seule)
  */
 router.put('/:id/amender',
   authenticate,
-  validateurOrAdmin,
+  validateurOnly,
   [
     param('id').isInt().withMessage('ID invalide'),
     body('commentaire').trim().notEmpty().withMessage('Le commentaire est obligatoire')
@@ -206,7 +206,7 @@ router.put('/:id/amender',
  */
 router.put('/:id/soumettre',
   authenticate,
-  gestionnaireOrAdmin,
+  gestionnaireOnly,
   [param('id').isInt().withMessage('ID invalide')],
   validate,
   contenuController.soumettre
@@ -215,28 +215,28 @@ router.put('/:id/soumettre',
 /**
  * @route   PUT /api/contenus/:id/publier
  * @desc    Publier un contenu valide
- * @access  Gestionnaire, Admin
+ * @access  Gestionnaire (admin lecture seule)
  */
 router.put('/:id/publier',
   authenticate,
-  gestionnaireOrAdmin,
+  gestionnaireOnly,
   [param('id').isInt().withMessage('ID invalide')],
   validate,
   contenuController.publier
 );
 
 // ============================================
-// ROUTES ADMIN / GESTIONNAIRE - CRUD
+// ROUTES GESTIONNAIRE - CRUD (admin lecture seule)
 // ============================================
 
 /**
  * @route   POST /api/contenus
  * @desc    Creer un nouveau contenu
- * @access  Gestionnaire, Admin
+ * @access  Gestionnaire uniquement
  */
 router.post('/',
   authenticate,
-  gestionnaireOrAdmin,
+  gestionnaireOnly,
   [
     body('titre').trim().notEmpty().withMessage('Titre requis')
       .isLength({ min: 5, max: 255 }).withMessage('Titre entre 5 et 255 caracteres'),
@@ -259,7 +259,7 @@ router.post('/',
  */
 router.put('/:id',
   authenticate,
-  gestionnaireOrAdmin,
+  gestionnaireOnly,
   [
     param('id').isInt().withMessage('ID invalide'),
     body('titre').optional().trim().isLength({ min: 5, max: 255 }).withMessage('Titre entre 5 et 255 caracteres'),
@@ -273,12 +273,12 @@ router.put('/:id',
 
 /**
  * @route   DELETE /api/contenus/:id
- * @desc    Supprimer un contenu
- * @access  Admin
+ * @desc    Supprimer un contenu (createur uniquement, admin lecture seule)
+ * @access  Gestionnaire (proprietaire)
  */
 router.delete('/:id',
   authenticate,
-  adminOnly,
+  gestionnaireOnly,
   [param('id').isInt().withMessage('ID invalide')],
   validate,
   contenuController.delete

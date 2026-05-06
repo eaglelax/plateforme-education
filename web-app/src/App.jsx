@@ -8,6 +8,7 @@ import './styles/index.css';
 import AdminLayout from './components/layout/AdminLayout';
 import AdminProtectedRoute from './components/common/AdminProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import RoleGuard from './components/common/RoleGuard';
 
 // Pages Admin
 import AdminLogin from './pages/admin/AdminLogin';
@@ -59,19 +60,35 @@ function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="contenus" element={<GestionContenus />} />
-              <Route path="contenus/nouveau" element={<NouveauContenu />} />
-              <Route path="contenus/:id/modifier" element={<NouveauContenu />} />
-              <Route path="mes-contenus" element={<MesContenus />} />
-              <Route path="validations" element={<Validations />} />
-              <Route path="utilisateurs" element={<GestionUtilisateurs />} />
-              <Route path="abonnements" element={<GestionAbonnements />} />
-              <Route path="paiements" element={<GestionPaiements />} />
-              <Route path="statistiques" element={<Statistiques />} />
-              <Route path="domaines" element={<GestionDomaines />} />
-              <Route path="journal" element={<JournalAudit />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="parametres" element={<ParametresPlateforme />} />
-              <Route path="enfants" element={<GestionEnfants />} />
+              <Route path="contenus/nouveau" element={
+                <RoleGuard allowedRoles={['GESTIONNAIRE_CONTENU']} showError>
+                  <NouveauContenu />
+                </RoleGuard>
+              } />
+              <Route path="contenus/:id/modifier" element={
+                <RoleGuard allowedRoles={['GESTIONNAIRE_CONTENU']} showError>
+                  <NouveauContenu />
+                </RoleGuard>
+              } />
+              <Route path="mes-contenus" element={
+                <RoleGuard allowedRoles={['GESTIONNAIRE_CONTENU']} showError>
+                  <MesContenus />
+                </RoleGuard>
+              } />
+              <Route path="validations" element={
+                <RoleGuard allowedRoles={['ADMIN', 'VALIDATEUR']} showError>
+                  <Validations />
+                </RoleGuard>
+              } />
+              <Route path="utilisateurs" element={<RoleGuard allowedRoles={['ADMIN']} showError><GestionUtilisateurs /></RoleGuard>} />
+              <Route path="abonnements" element={<RoleGuard allowedRoles={['ADMIN']} showError><GestionAbonnements /></RoleGuard>} />
+              <Route path="paiements" element={<RoleGuard allowedRoles={['ADMIN']} showError><GestionPaiements /></RoleGuard>} />
+              <Route path="statistiques" element={<RoleGuard allowedRoles={['ADMIN']} showError><Statistiques /></RoleGuard>} />
+              <Route path="domaines" element={<RoleGuard allowedRoles={['ADMIN', 'GESTIONNAIRE_CONTENU']} showError><GestionDomaines /></RoleGuard>} />
+              <Route path="journal" element={<RoleGuard allowedRoles={['ADMIN']} showError><JournalAudit /></RoleGuard>} />
+              <Route path="notifications" element={<RoleGuard allowedRoles={['ADMIN']} showError><AdminNotifications /></RoleGuard>} />
+              <Route path="parametres" element={<RoleGuard allowedRoles={['ADMIN']} showError><ParametresPlateforme /></RoleGuard>} />
+              <Route path="enfants" element={<RoleGuard allowedRoles={['ADMIN']} showError><GestionEnfants /></RoleGuard>} />
             </Route>
 
             {/* Fallback */}

@@ -63,17 +63,15 @@ function GestionContenus() {
   const userRole = getRole()?.toUpperCase();
   const hasAdminRole = isAdmin();
 
-  // Verifie si l'utilisateur peut modifier/supprimer un contenu
+  // Admin = lecture seule. Seul le gestionnaire proprietaire peut modifier/supprimer.
   const canEdit = (contenu) => {
-    if (hasAdminRole) return true;
-    if (userRole === 'VALIDATEUR') return false;
-    // Gestionnaire peut modifier seulement ses propres contenus
+    if (userRole !== 'GESTIONNAIRE_CONTENU') return false;
     return contenu.createur_id === user?.id;
   };
 
-  // Verifie si l'utilisateur peut ajouter des contenus
+  // Seul le gestionnaire peut creer des contenus (admin et validateur exclus)
   const canAddContent = () => {
-    return userRole === 'GESTIONNAIRE_CONTENU' || hasAdminRole;
+    return userRole === 'GESTIONNAIRE_CONTENU';
   };
 
   useEffect(() => {

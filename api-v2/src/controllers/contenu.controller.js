@@ -382,8 +382,8 @@ const update = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  // Verifier les droits (createur ou admin)
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
+  // Verifier les droits (createur uniquement - admin n'a que la lecture)
+  if (contenu.createur_id !== req.user.id) {
     throw ApiError.forbidden('Vous ne pouvez modifier que vos propres contenus');
   }
 
@@ -526,7 +526,7 @@ const soumettre = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
+  if (contenu.createur_id !== req.user.id) {
     throw ApiError.forbidden('Vous ne pouvez soumettre que vos propres contenus');
   }
 
@@ -579,7 +579,7 @@ const publier = asyncHandler(async (req, res) => {
     throw ApiError.notFound('Contenu non trouve');
   }
 
-  if (contenu.createur_id !== req.user.id && req.user.role !== 'ADMIN') {
+  if (contenu.createur_id !== req.user.id) {
     throw ApiError.forbidden('Vous ne pouvez publier que vos propres contenus');
   }
 

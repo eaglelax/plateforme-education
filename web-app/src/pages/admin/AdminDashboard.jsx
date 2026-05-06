@@ -197,8 +197,8 @@ function AdminDashboard() {
       <div className="admin-section">
         <h2>Actions rapides</h2>
         <div className="quick-actions">
-          {/* Bug A: Masquer "Nouveau contenu" pour le validateur */}
-          {(userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' || hasAdminRole) && (
+          {/* Nouveau contenu : reserve au gestionnaire (admin lecture seule) */}
+          {userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' && (
             <Link to="/admin/contenus/nouveau" className="quick-action-card">
               <div className="action-icon">
                 <FiPlus />
@@ -207,12 +207,13 @@ function AdminDashboard() {
             </Link>
           )}
 
+          {/* Tous les contenus : admin (lecture) + gestionnaire (gestion) */}
           {(userRole?.toUpperCase() === 'GESTIONNAIRE_CONTENU' || hasAdminRole) && (
             <Link to="/admin/contenus" className="quick-action-card">
               <div className="action-icon">
                 <FiList />
               </div>
-              <span>Gerer les contenus</span>
+              <span>{hasAdminRole ? 'Consulter les contenus' : 'Gerer les contenus'}</span>
             </Link>
           )}
 
