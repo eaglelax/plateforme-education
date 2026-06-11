@@ -102,21 +102,21 @@ function GestionEnfants() {
               <tr><td colSpan="7" className="empty-cell">Aucun enfant trouve</td></tr>
             ) : filtered.map((enfant) => (
               <tr key={enfant.id}>
-                <td><strong>{enfant.nom_pseudo}</strong></td>
-                <td>{enfant.age} ans</td>
-                <td><code>{enfant.code_connexion}</code></td>
-                <td>
+                <td data-label="Pseudo"><strong>{enfant.nom_pseudo}</strong></td>
+                <td data-label="Age">{enfant.age} ans</td>
+                <td data-label="Code connexion"><code>{enfant.code_connexion}</code></td>
+                <td data-label="XP">
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <FiStar size={14} color="#F59E0B" /> {enfant.points_xp || 0}
+                    <FiStar size={14} color="var(--gold)" /> {enfant.points_xp || 0}
                   </span>
                 </td>
-                <td>Niv. {enfant.niveau_global || 1}</td>
-                <td>
+                <td data-label="Niveau">Niv. {enfant.niveau_global || 1}</td>
+                <td data-label="Statut">
                   <span className={`status-badge ${enfant.statut === 'actif' ? 'active' : 'inactive'}`}>
                     {enfant.statut || 'actif'}
                   </span>
                 </td>
-                <td className="actions-cell">
+                <td data-label="Actions" className="actions-cell">
                   <button className="btn-icon" title="Voir details" onClick={() => handleView(enfant)}><FiEye /></button>
                 </td>
               </tr>

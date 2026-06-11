@@ -181,7 +181,7 @@ function GestionAbonnements() {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page gestion-abonnements-page">
       <div className="page-header">
         <div className="header-content">
           <FiPackage className="header-icon" />
@@ -248,9 +248,9 @@ function GestionAbonnements() {
               {/* Domaines inclus */}
               <div className="form-group" style={{ marginTop: '1rem' }}>
                 <label><FiGrid style={{ marginRight: 6 }} />Domaines inclus dans ce pack ({typeForm.domaineIds.length}/{domaines.length})</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: '#F9FAFB', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border)' }}>
                   {domaines.map(d => (
-                    <label key={d.id} className="checkbox-label" style={{ background: 'white', padding: '6px 10px', borderRadius: '6px', border: '1px solid #E5E7EB', cursor: 'pointer' }}>
+                    <label key={d.id} className="checkbox-label" style={{ background: 'var(--bg-elevated)', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
                         checked={typeForm.domaineIds.includes(d.id)}
@@ -260,7 +260,7 @@ function GestionAbonnements() {
                     </label>
                   ))}
                 </div>
-                <small style={{ color: '#6B7280', marginTop: 4, display: 'block' }}>
+                <small style={{ color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
                   Si aucun domaine n'est selectionne, les abonnes auront acces a tous les domaines (transition douce).
                 </small>
               </div>
@@ -279,7 +279,7 @@ function GestionAbonnements() {
               <h4>{type.nom}</h4>
               <p className="price">{formatPrice(type.prix)}</p>
               <p className="duration">{type.duree_jours} jours</p>
-              <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#6B7280' }}>
+              <div style={{ marginTop: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 <FiGrid style={{ marginRight: 4, verticalAlign: 'middle' }} />
                 {(type.domaines || []).length === 0
                   ? 'Tous domaines (par defaut)'
@@ -288,9 +288,9 @@ function GestionAbonnements() {
               {type.domaines && type.domaines.length > 0 && (
                 <div style={{ marginTop: 6, fontSize: '0.75rem' }}>
                   {type.domaines.slice(0, 3).map(d => (
-                    <span key={d.id} style={{ display: 'inline-block', marginRight: 4, padding: '2px 6px', background: '#EEF2FF', borderRadius: 4 }}>{d.icone} {d.nom}</span>
+                    <span key={d.id} style={{ display: 'inline-block', marginRight: 4, padding: '2px 6px', background: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: 4 }}>{d.icone} {d.nom}</span>
                   ))}
-                  {type.domaines.length > 3 && <span style={{ color: '#6B7280' }}>+{type.domaines.length - 3}</span>}
+                  {type.domaines.length > 3 && <span style={{ color: 'var(--text-muted)' }}>+{type.domaines.length - 3}</span>}
                 </div>
               )}
               <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: '4px' }}>
@@ -345,17 +345,17 @@ function GestionAbonnements() {
             ) : (
               abonnements.map((abo) => (
                 <tr key={abo.id}>
-                  <td><strong>{abo.enfant?.nom || abo.enfant_nom || abo.nom_pseudo}</strong></td>
-                  <td>{abo.type?.nom || abo.type_nom || abo.type_abonnement}</td>
-                  <td>{formatDate(abo.dateDebut || abo.date_debut)}</td>
-                  <td>{formatDate(abo.dateFin || abo.date_fin)}</td>
-                  <td>{getStatusBadge(abo.statut)}</td>
-                  <td>
+                  <td data-label="Enfant"><strong>{abo.enfant?.nom || abo.enfant_nom || abo.nom_pseudo}</strong></td>
+                  <td data-label="Type">{abo.type?.nom || abo.type_nom || abo.type_abonnement}</td>
+                  <td data-label="Debut">{formatDate(abo.dateDebut || abo.date_debut)}</td>
+                  <td data-label="Fin">{formatDate(abo.dateFin || abo.date_fin)}</td>
+                  <td data-label="Statut">{getStatusBadge(abo.statut)}</td>
+                  <td data-label="Renouvellement">
                     <span className={(abo.renouvellementAuto || abo.renouvellement_auto) ? 'text-success' : 'text-muted'}>
                       {(abo.renouvellementAuto || abo.renouvellement_auto) ? 'Oui' : 'Non'}
                     </span>
                   </td>
-                  <td className="actions-cell">
+                  <td data-label="Actions" className="actions-cell">
                     <button className="btn-icon" title="Voir details" onClick={() => { setSelectedAbo(abo); setShowModal(true); }}>
                       <FiEye />
                     </button>
@@ -430,12 +430,12 @@ function GestionAbonnements() {
               <button className="modal-close" onClick={() => setShowDomainsModal(false)}><FiX /></button>
             </div>
             <div className="modal-body">
-              <p style={{ color: '#6B7280', marginBottom: 12 }}>
+              <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
                 Selectionnez les domaines inclus dans ce pack. Les abonnements deja actifs ne seront pas affectes (snapshot a la souscription).
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
                 {domaines.map(d => (
-                  <label key={d.id} className="checkbox-label" style={{ background: selectedDomainIds.includes(d.id) ? '#EEF2FF' : 'white', padding: '10px 12px', borderRadius: '8px', border: `1px solid ${selectedDomainIds.includes(d.id) ? '#6366F1' : '#E5E7EB'}`, cursor: 'pointer' }}>
+                  <label key={d.id} className="checkbox-label" style={{ background: selectedDomainIds.includes(d.id) ? 'var(--accent-soft)' : 'var(--bg-elevated)', padding: '10px 12px', borderRadius: '8px', border: `1px solid ${selectedDomainIds.includes(d.id) ? 'var(--accent)' : 'var(--border)'}`, cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={selectedDomainIds.includes(d.id)}
@@ -445,7 +445,7 @@ function GestionAbonnements() {
                   </label>
                 ))}
               </div>
-              <div style={{ marginTop: 12, padding: 8, background: '#FEF3C7', borderRadius: 6, color: '#92400E', fontSize: '0.85rem' }}>
+              <div style={{ marginTop: 12, padding: 8, background: 'var(--warning-soft)', borderRadius: 6, color: 'var(--warning)', fontSize: '0.85rem' }}>
                 {selectedDomainIds.length === 0
                   ? '⚠ Aucun domaine selectionne : les nouveaux abonnes auront acces a tous les domaines (defaut).'
                   : `${selectedDomainIds.length} domaine(s) selectionne(s)`}

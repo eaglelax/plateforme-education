@@ -1,0 +1,76 @@
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition),
+              border-color var(--transition);
+}
+
+.theme-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Variante switch (interrupteur) */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.theme-switch-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition: background-color var(--transition);
+}
+
+.theme-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), background-color var(--transition);
+}
+
+.theme-switch.is-dark .theme-switch-track {
+  background: var(--accent);
+}
+
+.theme-switch.is-dark .theme-switch-thumb {
+  transform: translateX(20px);
+  background: var(--anka-black);
+  color: var(--anka-white-warm);
+}
+
+.theme-switch:focus-visible .theme-switch-track {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}

@@ -16,16 +16,18 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173,
+    port: 5174,
+    strictPort: false,
+    open: '/admin/login',
     proxy: {
       // Proxy les requetes /uploads vers l'API backend
       '/uploads': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:4000',
         changeOrigin: true
       },
       // Proxy les requetes /api vers l'API backend
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:4000',
         changeOrigin: true
       }
     }

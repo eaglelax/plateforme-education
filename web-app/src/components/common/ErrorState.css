@@ -5,39 +5,79 @@
   justify-content: center;
   padding: 3rem;
   text-align: center;
-  background: var(--white);
-  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md, 12px);
   box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .error-state .error-icon {
   width: 64px;
   height: 64px;
-  background: #FEE2E2;
+  background: var(--danger-soft);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
-  color: #DC2626;
+  color: var(--danger);
   margin-bottom: 1rem;
 }
 
 .error-state h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--gray-800);
+  color: var(--text);
   margin-bottom: 0.5rem;
 }
 
 .error-state p {
-  color: var(--gray-500);
+  color: var(--text-muted);
   margin-bottom: 1.5rem;
   max-width: 300px;
+  line-height: 1.5;
 }
 
 .error-state .btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 44px;
+}
+
+/* Responsive */
+/* Tablette : 640px – 1023px */
+@media (max-width: 1023px) {
+  .error-state {
+    padding: 2.5rem 2rem;
+  }
+}
+
+/* Mobile : < 640px */
+@media (max-width: 639px) {
+  .error-state {
+    padding: 1.75rem 1rem;
+  }
+
+  .error-state .error-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .error-state h3 {
+    font-size: 1rem;
+  }
+
+  .error-state p {
+    font-size: 0.875rem;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .error-state .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

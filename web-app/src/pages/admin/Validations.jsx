@@ -309,20 +309,20 @@ function Validations() {
               <tbody>
                 {contenus.map((contenu) => (
                   <tr key={contenu.id}>
-                    <td>
+                    <td data-label="Type">
                       <div className={`type-icon ${contenu.type}`}>
                         {getTypeIcon(contenu.type)}
                       </div>
                     </td>
-                    <td className="title-cell">
+                    <td className="title-cell" data-label="Titre">
                       <strong>{contenu.titre}</strong>
                       {contenu.description && (
                         <span className="description">{contenu.description.substring(0, 60)}...</span>
                       )}
                     </td>
-                    <td>{contenu.domaine_nom}</td>
-                    <td>{contenu.createurNom || `${contenu.createur_prenom} ${contenu.createur_nom}`}</td>
-                    <td>
+                    <td data-label="Domaine">{contenu.domaine_nom}</td>
+                    <td data-label="Createur">{contenu.createurNom || `${contenu.createur_prenom} ${contenu.createur_nom}`}</td>
+                    <td data-label="Statut">
                       <span className={`status-badge status-${contenu.statut}`}>
                         {contenu.statut === 'en_attente' && 'En attente'}
                         {contenu.statut === 'valide' && 'Validé'}
@@ -330,9 +330,9 @@ function Validations() {
                         {contenu.statut === 'publie' && 'Publié'}
                       </span>
                     </td>
-                    <td>{contenu.tranche_age_min}-{contenu.tranche_age_max} ans</td>
-                    <td>{formatDate(contenu.date_soumission)}</td>
-                    <td className="actions-cell">
+                    <td data-label="Age cible">{contenu.tranche_age_min}-{contenu.tranche_age_max} ans</td>
+                    <td data-label="Soumis le">{formatDate(contenu.date_soumission)}</td>
+                    <td className="actions-cell" data-label="Actions">
                       <button
                         className="btn-action view"
                         onClick={() => openModal(contenu, 'view')}

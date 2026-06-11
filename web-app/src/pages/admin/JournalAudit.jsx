@@ -89,20 +89,20 @@ function JournalAudit() {
               <tr><td colSpan="4" className="empty-cell">Aucune activite enregistree</td></tr>
             ) : journal.map((entry, i) => (
               <tr key={entry.id || i}>
-                <td>
+                <td data-label="Date">
                   <div className="date-cell">
                     <FiClock size={14} />
                     <span>{formatDate(entry.date || entry.date_creation || entry.created_at)}</span>
                   </div>
                 </td>
-                <td>
+                <td data-label="Utilisateur">
                   <div className="user-cell">
                     <FiUser size={14} />
                     <span>{entry.utilisateur_nom || entry.user_name || entry.nom || 'Systeme'}</span>
                   </div>
                 </td>
-                <td>{getActionBadge(entry.action || entry.type)}</td>
-                <td>{entry.details || entry.description || entry.message || '-'}</td>
+                <td data-label="Action">{getActionBadge(entry.action || entry.type)}</td>
+                <td data-label="Details">{entry.details || entry.description || entry.message || '-'}</td>
               </tr>
             ))}
           </tbody>

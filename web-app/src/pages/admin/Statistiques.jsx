@@ -78,14 +78,14 @@ function Statistiques() {
 
   if (loading) {
     return (
-      <div className="admin-page">
+      <div className="admin-page statistiques-page">
         <div className="loading-container"><div className="loader"></div><p>Chargement des statistiques...</p></div>
       </div>
     );
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page statistiques-page">
       <div className="page-header">
         <div className="header-content">
           <FiPieChart className="header-icon" />
@@ -210,7 +210,7 @@ function Statistiques() {
                     <span className="domain-count">{domaine.count} contenus</span>
                   </div>
                   <div className="domain-progress">
-                    <div className="domain-progress-bar" style={{ width: `${(domaine.count / (stats?.contenus?.total || 1)) * 100}%`, backgroundColor: domaine.couleur || '#6366f1' }} />
+                    <div className="domain-progress-bar" style={{ width: `${(domaine.count / (stats?.contenus?.total || 1)) * 100}%`, backgroundColor: domaine.couleur || 'var(--accent)' }} />
                   </div>
                 </div>
               )) || <p className="no-data">Aucune donnee disponible</p>}

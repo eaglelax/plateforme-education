@@ -1,0 +1,20 @@
+<svg width="520" height="160" viewBox="0 0 520 160" xmlns="http://www.w3.org/2000/svg">
+  <title>ANKA Logo Horizontal</title>
+  <!-- Symbol -->
+  <g transform="translate(80, 80) scale(0.46)">
+    <path d="M -70 112 C -70 12, -45 -58, 0 -90 C 45 -58, 70 12, 70 112"
+          fill="none" stroke="#0D0D0D" stroke-width="26" stroke-linecap="round"/>
+    <path d="M -34 112 C -34 40, -20 -20, 0 -46 C 20 -20, 34 40, 34 112"
+          fill="none" stroke="#0D0D0D" stroke-width="10" stroke-linecap="round"/>
+    <line x1="-60" y1="26" x2="60" y2="26" stroke="#0D0D0D" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="0" cy="-114" r="9" fill="#0D0D0D"/>
+  </g>
+  <!-- Separator -->
+  <line x1="150" y1="28" x2="150" y2="132" stroke="#0D0D0D" stroke-width="1" opacity="0.18"/>
+  <!-- Wordmark -->
+  <text x="172" y="100" font-family="'DM Sans', sans-serif"
+        font-size="62" font-weight="700" fill="#0D0D0D" letter-spacing="10">ANKA</text>
+  <!-- Tagline -->
+  <text x="174" y="128" font-family="'DM Sans', sans-serif"
+        font-size="11" font-weight="300" fill="#888888" letter-spacing="3.5">NOS CULTURES. LEUR AVENIR.</text>
+</svg>

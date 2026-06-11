@@ -1,7 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
-import { FiMail, FiLock, FiAlertCircle, FiShield, FiEye, FiEyeOff, FiSettings, FiCheckCircle, FiEdit3, FiClock } from 'react-icons/fi';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
+import {
+  FiMail,
+  FiLock,
+  FiAlertCircle,
+  FiEye,
+  FiEyeOff,
+  FiSettings,
+  FiCheckCircle,
+  FiEdit3,
+  FiClock,
+} from 'react-icons/fi';
 import useAdminAuthStore from '../../stores/adminAuthStore';
+import useThemeStore from '../../stores/themeStore';
+import AnkaLogo from '../../components/common/AnkaLogo';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import './AdminLogin.css';
 
 function AdminLogin() {
@@ -13,17 +26,20 @@ function AdminLogin() {
   const [loading, setLoading] = useState(false);
 
   const { login, isAuthenticated, hasAccess } = useAdminAuthStore();
+  const initTheme = useThemeStore((s) => s.init);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Afficher message si session expirée
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
+
   useEffect(() => {
     if (searchParams.get('expired') === '1') {
       setInfo('Votre session a expiré, veuillez vous reconnecter.');
     }
   }, [searchParams]);
 
-  // Si deja connecte en admin avec acces valide, rediriger
   if (isAuthenticated && hasAccess()) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -54,35 +70,27 @@ function AdminLogin() {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
     <div className="admin-login-page">
+      <div className="admin-login-theme-toggle">
+        <ThemeToggle />
+      </div>
+
       <div className="admin-login-container">
         <div className="admin-login-header">
           <div className="admin-logo" aria-hidden="true">
-            <FiShield size={42} />
+            <AnkaLogo size={48} />
           </div>
           <h1>Espace Professionnel</h1>
-          <p>Administrateurs, Validateurs et Gestionnaires</p>
+          <p className="anka-tagline">Nos cultures. Leur avenir.</p>
+          <p className="admin-login-subtitle">
+            Administrateurs · Validateurs · Gestionnaires
+          </p>
         </div>
 
         <form className="admin-login-form" onSubmit={handleSubmit} noValidate>
           {info && !error && (
-            <div className="info-alert" role="status" aria-live="polite" style={{
-              padding: '0.75rem 1rem',
-              background: '#FEF3C7',
-              border: '1px solid #FCD34D',
-              borderRadius: 8,
-              color: '#92400E',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
-            }}>
+            <div className="info-alert" role="status" aria-live="polite">
               <FiClock aria-hidden="true" />
               <span>{info}</span>
             </div>
@@ -102,11 +110,10 @@ function AdminLogin() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@plateforme-educative.bf"
+                placeholder="admin@anka.education"
                 disabled={loading}
                 autoComplete="email"
                 aria-required="true"
-                aria-describedby={error ? 'login-error' : undefined}
               />
               <FiMail aria-hidden="true" />
             </div>
@@ -129,7 +136,7 @@ function AdminLogin() {
               <button
                 type="button"
                 className="password-toggle"
-                onClick={togglePasswordVisibility}
+                onClick={() => setShowPassword(!showPassword)}
                 disabled={loading}
                 aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
               >
@@ -145,10 +152,7 @@ function AdminLogin() {
             aria-busy={loading}
           >
             {loading ? (
-              <>
-                <span className="btn-loading-text">Connexion en cours</span>
-                <span className="visually-hidden">Veuillez patienter...</span>
-              </>
+              <span className="btn-loading-text">Connexion en cours</span>
             ) : (
               'Se connecter'
             )}
@@ -156,50 +160,52 @@ function AdminLogin() {
         </form>
 
         <div className="admin-login-footer">
-          <Link to="/login" className="back-link">
-            Retour au portail parent
-          </Link>
+          <span className="footer-brand">ANKA EdTech</span>
+          <span className="footer-sep">·</span>
+          <span>Ouagadougou</span>
         </div>
       </div>
 
-      <div className="admin-login-info" aria-label="Informations sur les rôles">
-        <h2>Portail Professionnel</h2>
-        <p>Gérez efficacement votre plateforme éducative</p>
+      <aside className="admin-login-info" aria-label="Informations sur les rôles">
+        <div className="info-inner">
+          <h2>Portail Professionnel</h2>
+          <p>Gérez efficacement la plateforme éducative ANKA</p>
 
-        <div className="role-section">
-          <h3>
-            <span className="role-icon"><FiSettings size={16} /></span>
-            Administrateurs
-          </h3>
-          <ul>
-            <li>Gestion complète de la plateforme</li>
-            <li>Suivi des utilisateurs et abonnements</li>
-            <li>Statistiques et rapports détaillés</li>
-          </ul>
-        </div>
+          <div className="role-section">
+            <h3>
+              <span className="role-icon"><FiSettings size={16} /></span>
+              Administrateurs
+            </h3>
+            <ul>
+              <li>Gestion complète de la plateforme</li>
+              <li>Suivi des utilisateurs et abonnements</li>
+              <li>Statistiques et rapports détaillés</li>
+            </ul>
+          </div>
 
-        <div className="role-section">
-          <h3>
-            <span className="role-icon"><FiCheckCircle size={16} /></span>
-            Validateurs
-          </h3>
-          <ul>
-            <li>Validation des contenus éducatifs</li>
-            <li>Contrôle qualité des ressources</li>
-          </ul>
-        </div>
+          <div className="role-section">
+            <h3>
+              <span className="role-icon"><FiCheckCircle size={16} /></span>
+              Validateurs
+            </h3>
+            <ul>
+              <li>Validation des contenus éducatifs</li>
+              <li>Contrôle qualité des ressources</li>
+            </ul>
+          </div>
 
-        <div className="role-section">
-          <h3>
-            <span className="role-icon"><FiEdit3 size={16} /></span>
-            Gestionnaires de contenu
-          </h3>
-          <ul>
-            <li>Création et édition de contenus</li>
-            <li>Organisation des ressources pédagogiques</li>
-          </ul>
+          <div className="role-section">
+            <h3>
+              <span className="role-icon"><FiEdit3 size={16} /></span>
+              Gestionnaires de contenu
+            </h3>
+            <ul>
+              <li>Création et édition de contenus</li>
+              <li>Organisation des ressources pédagogiques</li>
+            </ul>
+          </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }

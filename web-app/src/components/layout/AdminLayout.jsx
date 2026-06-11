@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome,
@@ -7,7 +8,6 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
-  FiShield,
   FiCheckSquare,
   FiCreditCard,
   FiPackage,
@@ -21,14 +21,22 @@ import {
 } from 'react-icons/fi';
 import { useState } from 'react';
 import useAdminAuthStore from '../../stores/adminAuthStore';
+import useThemeStore from '../../stores/themeStore';
+import AnkaLogo from '../common/AnkaLogo';
+import ThemeToggle from '../common/ThemeToggle';
 import './AdminLayout.css';
 
 function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout, getRole, isAdmin } = useAdminAuthStore();
+  const initTheme = useThemeStore((s) => s.init);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   const handleLogout = () => {
     logout();
@@ -43,15 +51,11 @@ function AdminLayout() {
   const isValidateur = userRole === 'VALIDATEUR';
 
   // Admin = lecture seule sur les contenus / pas de creation, pas de validation
-  const canViewContent = hasAdminRole || isGestionnaireContenu; // accede a "Tous les contenus" en lecture
-  const canCreateContent = isGestionnaireContenu; // "Mes contenus" + Nouveau contenu
+  const canViewContent = hasAdminRole || isGestionnaireContenu;
+  const canCreateContent = isGestionnaireContenu;
   const canManageDomains = hasAdminRole || isGestionnaireContenu;
-  const canViewValidation = hasAdminRole || isValidateur; // admin voit la file en lecture
-  const canValidate = isValidateur; // boutons valider/amender (admin exclu)
-  const canViewUsers = hasAdminRole;
-  const canViewStats = hasAdminRole;
-  const canViewPayments = hasAdminRole;
-  const canViewSubscriptions = hasAdminRole;
+  const canViewValidation = hasAdminRole || isValidateur;
+  const canValidate = isValidateur;
 
   const getRoleLabel = () => {
     switch (userRole) {
@@ -62,7 +66,7 @@ function AdminLayout() {
     }
   };
 
-  const NavLink = ({ to, icon: Icon, label, exact }) => (
+  const NavLink = ({ to, icon: Icon, label }) => (
     <Link
       to={to}
       className={`sidebar-link ${isActive(to) ? 'active' : ''}`}
@@ -84,15 +88,21 @@ function AdminLayout() {
         {/* Brand */}
         <div className="sidebar-brand">
           <Link to="/admin/dashboard" className="sidebar-brand-link">
-            <div className="sidebar-brand-icon"><FiShield /></div>
+            <div className="sidebar-brand-icon">
+              <AnkaLogo size={28} />
+            </div>
             {!collapsed && (
               <div className="sidebar-brand-text">
-                <span className="sidebar-brand-title">Faso Yiri</span>
+                <span className="sidebar-brand-title">ANKA</span>
                 <span className="sidebar-brand-sub">Administration</span>
               </div>
             )}
           </Link>
-          <button className="sidebar-collapse-btn" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Agrandir' : 'Reduire'}>
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Agrandir' : 'Reduire'}
+          >
             <FiChevronLeft className={collapsed ? 'rotated' : ''} />
           </button>
         </div>
@@ -168,6 +178,7 @@ function AdminLayout() {
           </button>
           <div className="topbar-right">
             <span className="topbar-role">{getRoleLabel()}</span>
+            <ThemeToggle />
           </div>
         </header>
         <main className="admin-main-content">

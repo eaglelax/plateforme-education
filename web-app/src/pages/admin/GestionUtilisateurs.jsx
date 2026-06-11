@@ -272,8 +272,8 @@ function GestionUtilisateurs() {
       {success && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem',
-          background: 'linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%)',
-          border: '1px solid #86EFAC', borderRadius: '12px', color: '#065F46',
+          background: 'var(--success-soft)',
+          border: '1px solid var(--success)', borderRadius: '12px', color: 'var(--success)',
           marginBottom: '1.5rem'
         }}>
           <FiShield />
@@ -318,7 +318,7 @@ function GestionUtilisateurs() {
             ) : (
               utilisateurs.map((user) => (
                 <tr key={user.id}>
-                  <td>
+                  <td data-label="Utilisateur">
                     <div className="user-info">
                       <div className="user-avatar">
                         {user.prenom?.[0]}{user.nom?.[0]}
@@ -328,20 +328,20 @@ function GestionUtilisateurs() {
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Contact">
                     <div className="contact-info">
                       <span>{user.email || '-'}</span>
                       <span className="phone">{user.telephone}</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Role">
                     <span className={`role-badge ${getRoleBadgeClass(user.role_nom || user.role)}`}>
                       {getRoleLabel(user.role_nom || user.role)}
                     </span>
                   </td>
-                  <td>{getStatusBadge(user.statut_compte)}</td>
-                  <td>{formatDate(user.date_creation)}</td>
-                  <td className="actions-cell">
+                  <td data-label="Statut">{getStatusBadge(user.statut_compte)}</td>
+                  <td data-label="Inscription">{formatDate(user.date_creation)}</td>
+                  <td data-label="Actions" className="actions-cell">
                     <button className="btn-icon" title="Voir" onClick={() => handleView(user)}>
                       <FiEye />
                     </button>
@@ -351,7 +351,7 @@ function GestionUtilisateurs() {
                           <FiEdit2 />
                         </button>
                         <button className="btn-icon" title="Supprimer" onClick={() => handleDelete(user)}
-                          style={{ color: '#EF4444' }}>
+                          style={{ color: 'var(--danger)' }}>
                           <FiTrash2 />
                         </button>
                       </>
@@ -433,9 +433,9 @@ function GestionUtilisateurs() {
                       <h4>Enfants ({selectedUser.enfants.length})</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                         {selectedUser.enfants.map(e => (
-                          <div key={e.id} style={{ padding: '0.75rem', background: '#F8FAFC', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                          <div key={e.id} style={{ padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
                             <span><strong>{e.nom_pseudo}</strong> - {e.age} ans</span>
-                            <span style={{ color: '#64748B' }}>{e.code_connexion}</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{e.code_connexion}</span>
                           </div>
                         ))}
                       </div>
@@ -567,7 +567,7 @@ function GestionUtilisateurs() {
                     </select>
                   </div>
                 </div>
-                <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#EEF2FF', borderRadius: '8px', fontSize: '0.85rem', color: '#4F46E5' }}>
+                <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'var(--accent-soft)', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--accent)' }}>
                   {userRole === 'VALIDATEUR'
                     ? 'En tant que validateur, vous pouvez creer des comptes gestionnaire de contenu.'
                     : 'En tant qu\'administrateur, vous pouvez creer des comptes validateur et gestionnaire de contenu.'

@@ -73,7 +73,11 @@ async function deploy() {
     }
     await client.cd("/");
 
-    // Upload vite.svg
+    // Upload favicon ANKA (et anciens éventuels pour compat)
+    if (fs.existsSync(path.join(LOCAL_DIR, "anka-favicon.svg"))) {
+      console.log("[FTP] Upload anka-favicon.svg");
+      await client.uploadFrom(path.join(LOCAL_DIR, "anka-favicon.svg"), "anka-favicon.svg");
+    }
     if (fs.existsSync(path.join(LOCAL_DIR, "vite.svg"))) {
       await client.uploadFrom(path.join(LOCAL_DIR, "vite.svg"), "vite.svg");
     }

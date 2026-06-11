@@ -281,7 +281,7 @@ function GestionContenus() {
               const badge = getStatutBadge(contenu.statut);
               return (
                 <tr key={contenu.id}>
-                  <td>
+                  <td data-label="Titre">
                     <div className="contenu-titre-cell">
                       <div className="type-icon">{getTypeIcon(contenu.type)}</div>
                       <div>
@@ -290,11 +290,11 @@ function GestionContenus() {
                       </div>
                     </div>
                   </td>
-                  <td>{contenu.domaine_nom}</td>
-                  <td>
+                  <td data-label="Domaine">{contenu.domaine_nom}</td>
+                  <td data-label="Statut">
                     <span className={`badge ${badge.class}`}>{badge.label}</span>
                   </td>
-                  <td>
+                  <td data-label="Actions">
                     <div className="actions-cell">
                       {/* Bouton Voir: ouvre le modal de detail */}
                       <button

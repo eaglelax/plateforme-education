@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // URL de base - LWS utilise le format ?route=
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// En dev local : URL relative '/api' → utilise le proxy Vite (vite.config.js)
+//                → évite tout problème CORS quel que soit le port frontend
+// En prod LWS  : variable d'env VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Detection si on est sur LWS (production)
 const isLWS = BASE_URL.includes('apieducative.genius-universe.com');
@@ -78,6 +81,10 @@ api.interceptors.response.use(
         localStorage.removeItem('admin-token');
         localStorage.removeItem('admin-user');
         localStorage.removeItem('user');
+        // CRITIQUE : purger AUSSI le storage Zustand (sinon isAuthenticated reste true
+        // au prochain refresh et provoque une boucle de redirection /admin/dashboard <-> /admin/login)
+        localStorage.removeItem('admin-auth-storage');
+        localStorage.removeItem('auth-storage');
 
         // Petit delai pour eviter race condition multi-requetes
         setTimeout(() => {
@@ -98,6 +105,8 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('admin-token');
+    localStorage.removeItem('admin-auth-storage');
+    localStorage.removeItem('auth-storage');
   },
   getMe: () => api.get('/auth/me'),
   changePassword: (data) => api.put('/auth/change-password', data),

@@ -116,7 +116,7 @@ function GestionPaiements() {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page gestion-paiements-page">
       <div className="page-header">
         <div className="header-content">
           <FiCreditCard className="header-icon" />
@@ -201,22 +201,22 @@ function GestionPaiements() {
             ) : (
               paiements.map((paiement) => (
                 <tr key={paiement.id}>
-                  <td>
+                  <td data-label="Reference">
                     <code className="reference">{paiement.reference || `PAY-${paiement.id}`}</code>
                   </td>
-                  <td>
+                  <td data-label="Utilisateur">
                     <strong>{paiement.utilisateur_nom || 'N/A'}</strong>
                   </td>
-                  <td className="amount">{formatPrice(paiement.montant)}</td>
-                  <td>{getMethodeBadge(paiement.methode)}</td>
-                  <td>
+                  <td data-label="Montant" className="amount">{formatPrice(paiement.montant)}</td>
+                  <td data-label="Methode">{getMethodeBadge(paiement.methode)}</td>
+                  <td data-label="Statut">
                     <div className="status-with-icon">
                       {getStatusIcon(paiement.statut)}
                       {getStatusBadge(paiement.statut)}
                     </div>
                   </td>
-                  <td>{formatDate(paiement.date_creation)}</td>
-                  <td className="actions-cell">
+                  <td data-label="Date">{formatDate(paiement.date_creation)}</td>
+                  <td data-label="Actions" className="actions-cell">
                     <button className="btn-icon" title="Voir details" onClick={() => { setSelectedPaiement(paiement); setShowModal(true); }}>
                       <FiEye />
                     </button>

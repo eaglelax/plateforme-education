@@ -1,6 +1,5 @@
 /* ===================================
-   STATISTIQUES - Admin Theme
-   Enhanced statistics dashboard styles
+   STATISTIQUES - ANKA Theme
    =================================== */
 
 /* Base styles inherited from AdminPages.css */
@@ -17,9 +16,9 @@
     display: flex;
     gap: 1.5rem;
     padding: 1.75rem;
-    background: var(--admin-card, white);
+    background: var(--admin-card, var(--bg-elevated));
     border-radius: var(--admin-radius-xl, 20px);
-    box-shadow: var(--admin-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+    box-shadow: var(--admin-shadow, var(--shadow));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid transparent;
     animation: fadeInUp 0.5s ease-out backwards;
@@ -56,8 +55,8 @@
 
 .statistiques-page .stat-card.large:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-    border-color: var(--admin-border, #E2E8F0);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--admin-border, var(--border));
 }
 
 .statistiques-page .stat-card.large:hover::before {
@@ -65,19 +64,19 @@
 }
 
 .statistiques-page .stat-card.large:nth-child(1)::before {
-    background: linear-gradient(180deg, #3B82F6, #60A5FA);
+    background: var(--info);
 }
 
 .statistiques-page .stat-card.large:nth-child(2)::before {
-    background: linear-gradient(180deg, #10B981, #34D399);
+    background: var(--success);
 }
 
 .statistiques-page .stat-card.large:nth-child(3)::before {
-    background: linear-gradient(180deg, #8B5CF6, #A78BFA);
+    background: var(--gold);
 }
 
 .statistiques-page .stat-card.large:nth-child(4)::before {
-    background: linear-gradient(180deg, #F59E0B, #FBBF24);
+    background: var(--gold);
 }
 
 /* Stat Icons Enhanced */
@@ -98,33 +97,33 @@
 }
 
 .statistiques-page .stat-card .stat-icon.users {
-    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
-    color: #2563EB;
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.2);
+    background: var(--info-soft);
+    color: var(--info);
+    box-shadow: var(--shadow-md);
 }
 
 .statistiques-page .stat-card .stat-icon.content {
-    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
-    color: #16A34A;
-    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.2);
+    background: var(--success-soft);
+    color: var(--success);
+    box-shadow: var(--shadow-md);
 }
 
 .statistiques-page .stat-card .stat-icon.subscriptions {
-    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
-    color: #7C3AED;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.2);
+    background: var(--gold-soft);
+    color: var(--gold);
+    box-shadow: var(--shadow-md);
 }
 
 .statistiques-page .stat-card .stat-icon.revenue {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    color: #D97706;
-    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.2);
+    background: var(--gold-soft);
+    color: var(--gold);
+    box-shadow: var(--shadow-md);
 }
 
 /* Stat Content */
 .statistiques-page .stat-content h3 {
     font-size: 0.9rem;
-    color: var(--admin-text-muted, #64748B);
+    color: var(--admin-text-muted, var(--text-muted));
     margin: 0 0 0.5rem 0;
     font-weight: 500;
 }
@@ -132,7 +131,7 @@
 .statistiques-page .stat-main {
     font-size: 2.5rem;
     font-weight: 800;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
     margin-bottom: 0.75rem;
     letter-spacing: -0.03em;
     line-height: 1;
@@ -142,7 +141,7 @@
     display: flex;
     gap: 1.25rem;
     font-size: 0.875rem;
-    color: var(--admin-text-muted, #64748B);
+    color: var(--admin-text-muted, var(--text-muted));
     flex-wrap: wrap;
 }
 
@@ -153,23 +152,23 @@
 }
 
 .statistiques-page .stat-details strong {
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
 }
 
 /* Stats Sections Enhanced */
 .statistiques-page .stats-section {
-    background: var(--admin-card, white);
+    background: var(--admin-card, var(--bg-elevated));
     border-radius: var(--admin-radius-xl, 20px);
-    box-shadow: var(--admin-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+    box-shadow: var(--admin-shadow, var(--shadow));
     padding: 1.75rem;
     margin-bottom: 1.5rem;
-    border: 1px solid var(--admin-border, #E2E8F0);
+    border: 1px solid var(--admin-border, var(--border));
     animation: fadeInUp 0.5s ease-out 0.3s backwards;
 }
 
 .statistiques-page .stats-section h2 {
     font-size: 1.15rem;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
     margin: 0 0 1.5rem 0;
     font-weight: 700;
     display: flex;
@@ -181,7 +180,7 @@
     content: '';
     width: 4px;
     height: 22px;
-    background: linear-gradient(180deg, var(--admin-primary, #6366F1), var(--admin-purple, #8B5CF6));
+    background: var(--admin-primary, var(--accent));
     border-radius: 2px;
 }
 
@@ -194,7 +193,7 @@
 
 .statistiques-page .activity-card {
     padding: 1.5rem;
-    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    background: var(--bg-subtle);
     border-radius: var(--admin-radius-lg, 16px);
     text-align: center;
     transition: all 0.3s ease;
@@ -203,13 +202,13 @@
 
 .statistiques-page .activity-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-    border-color: var(--admin-border, #E2E8F0);
+    box-shadow: var(--shadow);
+    border-color: var(--admin-border, var(--border));
 }
 
 .statistiques-page .activity-card h4 {
     font-size: 0.85rem;
-    color: var(--admin-text-muted, #64748B);
+    color: var(--admin-text-muted, var(--text-muted));
     margin: 0 0 0.625rem 0;
     font-weight: 500;
 }
@@ -217,15 +216,12 @@
 .statistiques-page .activity-value {
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--admin-primary, #6366F1) 0%, var(--admin-purple, #8B5CF6) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--admin-primary, var(--accent));
 }
 
 .statistiques-page .activity-card p {
     font-size: 0.8rem;
-    color: var(--admin-text-light, #94A3B8);
+    color: var(--admin-text-light, var(--text-soft));
     margin: 0.5rem 0 0;
 }
 
@@ -250,20 +246,20 @@
 
 .statistiques-page .domain-name {
     font-weight: 600;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
 }
 
 .statistiques-page .domain-count {
     font-size: 0.875rem;
-    color: var(--admin-text-muted, #64748B);
-    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    color: var(--admin-text-muted, var(--text-muted));
+    background: var(--bg-subtle);
     padding: 0.25rem 0.75rem;
     border-radius: 50px;
 }
 
 .statistiques-page .domain-progress {
     height: 12px;
-    background: var(--admin-border, #E2E8F0);
+    background: var(--admin-border, var(--border));
     border-radius: 6px;
     overflow: hidden;
 }
@@ -272,7 +268,7 @@
     height: 100%;
     border-radius: 6px;
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(90deg, var(--admin-primary, #6366F1), var(--admin-purple, #8B5CF6));
+    background: var(--admin-primary, var(--accent));
     position: relative;
 }
 
@@ -304,7 +300,7 @@
 
 .statistiques-page .type-stat {
     padding: 1.5rem;
-    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    background: var(--bg-subtle);
     border-radius: var(--admin-radius-lg, 16px);
     text-align: center;
     transition: all 0.3s ease;
@@ -313,13 +309,13 @@
 
 .statistiques-page .type-stat:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-    border-color: var(--admin-border, #E2E8F0);
+    box-shadow: var(--shadow);
+    border-color: var(--admin-border, var(--border));
 }
 
 .statistiques-page .type-name {
     font-weight: 700;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
     margin-bottom: 0.625rem;
     font-size: 1rem;
 }
@@ -327,22 +323,19 @@
 .statistiques-page .type-count {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--admin-primary, #6366F1) 0%, var(--admin-purple, #8B5CF6) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--admin-primary, var(--accent));
 }
 
 .statistiques-page .type-revenue {
     font-size: 0.9rem;
-    color: var(--admin-text-muted, #64748B);
+    color: var(--admin-text-muted, var(--text-muted));
     margin-top: 0.375rem;
 }
 
 /* No Data State */
 .statistiques-page .no-data {
     text-align: center;
-    color: var(--admin-text-light, #94A3B8);
+    color: var(--admin-text-light, var(--text-soft));
     padding: 3rem;
     font-style: italic;
 }
@@ -357,5 +350,119 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive */
+/* Tablette : 640px – 1023px */
+@media (max-width: 1023px) {
+    .statistiques-page .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .statistiques-page .activity-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .statistiques-page .subscription-types {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .statistiques-page .stat-main {
+        font-size: 2rem;
+    }
+
+    .statistiques-page .activity-value {
+        font-size: 2rem;
+    }
+}
+
+/* Mobile : < 640px */
+@media (max-width: 639px) {
+    .statistiques-page .stats-overview {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .statistiques-page .stat-card.large {
+        padding: 1.25rem;
+        gap: 1rem;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .statistiques-page .stat-card .stat-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
+    .statistiques-page .stat-main {
+        font-size: 1.75rem;
+    }
+
+    .statistiques-page .stat-details {
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    .statistiques-page .stats-section {
+        padding: 1rem;
+    }
+
+    .statistiques-page .stats-section h2 {
+        font-size: 1rem;
+    }
+
+    .statistiques-page .activity-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .statistiques-page .activity-card {
+        padding: 1rem;
+    }
+
+    .statistiques-page .activity-value {
+        font-size: 1.75rem;
+    }
+
+    .statistiques-page .subscription-types {
+        grid-template-columns: 1fr;
+    }
+
+    .statistiques-page .type-stat {
+        padding: 1rem;
+    }
+
+    .statistiques-page .type-count {
+        font-size: 1.5rem;
+    }
+
+    /* Graphes : scroll horizontal en cas de manque de place */
+    .statistiques-page .domain-stats {
+        overflow-x: auto;
+    }
+
+    .statistiques-page .domain-bar {
+        min-width: 0;
+    }
+
+    .statistiques-page .domain-info {
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .statistiques-page .domain-name {
+        font-size: 0.875rem;
+    }
+
+    .statistiques-page .domain-count {
+        font-size: 0.75rem;
+    }
+
+    .statistiques-page .no-data {
+        padding: 2rem 1rem;
     }
 }

@@ -10,7 +10,7 @@ function GestionDomaines() {
   const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ nom: '', description: '', icone: '', couleur: '#6366f1' });
+  const [formData, setFormData] = useState({ nom: '', description: '', icone: '', couleur: '#C85A2A' });
 
   useEffect(() => { fetchDomaines(); }, []);
 
@@ -51,14 +51,14 @@ function GestionDomaines() {
       nom: domaine.nom || '',
       description: domaine.description || '',
       icone: domaine.icone || '',
-      couleur: domaine.couleur || '#6366f1',
+      couleur: domaine.couleur || '#C85A2A',
     });
     setShowForm(true);
   };
 
   const resetForm = () => {
     setEditId(null);
-    setFormData({ nom: '', description: '', icone: '', couleur: '#6366f1' });
+    setFormData({ nom: '', description: '', icone: '', couleur: '#C85A2A' });
     setShowForm(false);
   };
 
@@ -140,14 +140,14 @@ function GestionDomaines() {
               <tr><td colSpan="6" className="empty-cell">Aucun domaine</td></tr>
             ) : domaines.map((d) => (
               <tr key={d.id}>
-                <td><div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: d.couleur || '#6366f1' }} /></td>
-                <td><strong>{d.nom}</strong></td>
-                <td>{d.description || '-'}</td>
-                <td>{d.icone || '-'}</td>
-                <td>{d.contenus_count ?? d.count ?? '-'}</td>
-                <td className="actions-cell">
+                <td data-label="Couleur"><div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: d.couleur || '#C85A2A' }} /></td>
+                <td data-label="Nom"><strong>{d.nom}</strong></td>
+                <td data-label="Description">{d.description || '-'}</td>
+                <td data-label="Icone">{d.icone || '-'}</td>
+                <td data-label="Contenus">{d.contenus_count ?? d.count ?? '-'}</td>
+                <td data-label="Actions" className="actions-cell">
                   <button className="btn-icon" title="Modifier" onClick={() => handleEdit(d)}><FiEdit2 /></button>
-                  <button className="btn-icon" title="Desactiver" style={{ color: '#EF4444' }} onClick={async () => {
+                  <button className="btn-icon" title="Desactiver" style={{ color: 'var(--danger)' }} onClick={async () => {
                     if (!confirm(`Desactiver le domaine "${d.nom}" ? Il sera masque mais les contenus associes ne seront pas supprimes.`)) return;
                     try {
                       await contenuService.updateDomaine(d.id, { estActif: false });

@@ -1,6 +1,5 @@
 /* ===================================
-   GESTION PAIEMENTS - Admin Theme
-   Enhanced payment management styles
+   GESTION PAIEMENTS - ANKA Theme
    =================================== */
 
 /* Base styles inherited from AdminPages.css */
@@ -14,10 +13,10 @@
 }
 
 .gestion-paiements-page .stat-item {
-    background: var(--admin-card, white);
+    background: var(--admin-card, var(--bg-elevated));
     padding: 1.5rem;
     border-radius: var(--admin-radius-lg, 16px);
-    box-shadow: var(--admin-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+    box-shadow: var(--admin-shadow, var(--shadow));
     text-align: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid transparent;
@@ -55,7 +54,7 @@
 
 .gestion-paiements-page .stat-item:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .gestion-paiements-page .stat-item:hover::before {
@@ -65,7 +64,7 @@
 .gestion-paiements-page .stat-item .stat-label {
     display: block;
     font-size: 0.875rem;
-    color: var(--admin-text-muted, #64748B);
+    color: var(--admin-text-muted, var(--text-muted));
     margin-bottom: 0.625rem;
     font-weight: 500;
 }
@@ -74,49 +73,49 @@
     display: block;
     font-size: 1.75rem;
     font-weight: 800;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
 }
 
 .gestion-paiements-page .stat-item.success .stat-value {
-    color: var(--admin-secondary, #10B981);
+    color: var(--admin-secondary, var(--success));
 }
 
 .gestion-paiements-page .stat-item.success::before {
-    background: linear-gradient(90deg, #10B981, #34D399);
+    background: var(--success);
 }
 
 .gestion-paiements-page .stat-item.pending .stat-value {
-    color: var(--admin-accent, #F59E0B);
+    color: var(--admin-accent, var(--gold));
 }
 
 .gestion-paiements-page .stat-item.pending::before {
-    background: linear-gradient(90deg, #F59E0B, #FBBF24);
+    background: var(--gold);
 }
 
 .gestion-paiements-page .stat-item.error .stat-value {
-    color: var(--admin-danger, #EF4444);
+    color: var(--admin-danger, var(--danger));
 }
 
 .gestion-paiements-page .stat-item.error::before {
-    background: linear-gradient(90deg, #EF4444, #F87171);
+    background: var(--danger);
 }
 
 /* Payment Reference */
 .gestion-paiements-page .reference {
     font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    background: var(--bg-subtle);
     padding: 0.4rem 0.75rem;
     border-radius: 8px;
     font-size: 0.8rem;
-    color: var(--admin-text-muted, #64748B);
-    border: 1px solid var(--admin-border, #E2E8F0);
+    color: var(--admin-text-muted, var(--text-muted));
+    border: 1px solid var(--admin-border, var(--border));
 }
 
 /* Payment Amount */
 .gestion-paiements-page .amount {
     font-weight: 800;
     font-size: 1rem;
-    color: var(--admin-text, #1E293B);
+    color: var(--admin-text, var(--text));
 }
 
 /* Method Badges Enhanced */
@@ -131,26 +130,26 @@
 }
 
 .gestion-paiements-page .method-badge.orange {
-    background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 100%);
-    color: #C2410C;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+    background: var(--gold-soft);
+    color: var(--gold);
+    box-shadow: var(--shadow-sm);
 }
 
 .gestion-paiements-page .method-badge.moov {
-    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
-    color: #1D4ED8;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    background: var(--info-soft);
+    color: var(--info);
+    box-shadow: var(--shadow-sm);
 }
 
 .gestion-paiements-page .method-badge.wave {
-    background: linear-gradient(135deg, #CFFAFE 0%, #A5F3FC 100%);
-    color: #0891B2;
-    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.2);
+    background: var(--info-soft);
+    color: var(--info);
+    box-shadow: var(--shadow-sm);
 }
 
 .gestion-paiements-page .method-badge.card {
-    background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
-    color: var(--admin-text-muted, #64748B);
+    background: var(--bg-subtle);
+    color: var(--admin-text-muted, var(--text-muted));
 }
 
 /* Status With Icon */
@@ -165,19 +164,19 @@
 }
 
 .gestion-paiements-page .status-icon.success {
-    color: var(--admin-secondary, #10B981);
-    filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3));
+    color: var(--admin-secondary, var(--success));
+    filter: drop-shadow(0 2px 4px var(--success-soft));
 }
 
 .gestion-paiements-page .status-icon.pending {
-    color: var(--admin-accent, #F59E0B);
-    filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+    color: var(--admin-accent, var(--gold));
+    filter: drop-shadow(0 2px 4px var(--gold-soft));
     animation: pulse 2s ease-in-out infinite;
 }
 
 .gestion-paiements-page .status-icon.error {
-    color: var(--admin-danger, #EF4444);
-    filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3));
+    color: var(--admin-danger, var(--danger));
+    filter: drop-shadow(0 2px 4px var(--danger-soft));
 }
 
 @keyframes pulse {
@@ -201,21 +200,69 @@
 }
 
 .gestion-paiements-page .status-badge.active {
-    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
-    color: #15803D;
+    background: var(--success-soft);
+    color: var(--success);
 }
 
 .gestion-paiements-page .status-badge.pending {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    color: #92400E;
+    background: var(--gold-soft);
+    color: var(--gold);
 }
 
 .gestion-paiements-page .status-badge.error {
-    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
-    color: #DC2626;
+    background: var(--danger-soft);
+    color: var(--danger);
 }
 
 .gestion-paiements-page .status-badge.refunded {
-    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
-    color: #7C3AED;
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 1023px) {
+    .gestion-paiements-page .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .gestion-paiements-page .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .gestion-paiements-page .stat-item {
+        padding: 1.125rem;
+    }
+
+    .gestion-paiements-page .stat-item .stat-value {
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .gestion-paiements-page .quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .gestion-paiements-page .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gestion-paiements-page .filters-section select,
+    .gestion-paiements-page .filters-section .btn {
+        width: 100%;
+    }
+
+    /* Tap targets sur boutons modale */
+    .gestion-paiements-page .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .gestion-paiements-page .modal-footer {
+        flex-direction: column-reverse;
+    }
 }
