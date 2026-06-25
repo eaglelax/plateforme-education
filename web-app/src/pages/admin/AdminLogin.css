@@ -116,8 +116,7 @@
 
 .input-with-icon {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: block;
 }
 
 .input-with-icon input {
@@ -146,6 +145,11 @@
 .input-with-icon > svg {
   position: absolute;
   left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
   color: var(--text-muted);
   pointer-events: none;
 }
@@ -157,6 +161,8 @@
 .password-toggle {
   position: absolute;
   right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-muted);
@@ -246,6 +252,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding: 3rem 4rem;
   background: var(--accent);
   color: var(--text-on-accent);
@@ -281,78 +288,36 @@
   background: linear-gradient(135deg, var(--accent) 0%, #9F4520 100%);
 }
 
-.info-inner {
+/* Bloc de marque centré (logo ANKA seul) */
+.info-brand {
   position: relative;
   z-index: 1;
-  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
 }
 
-.admin-login-info h2 {
-  font-size: 1.875rem;
+.info-brand-logo {
+  color: var(--text-on-accent);
+  margin-bottom: 1rem;
+}
+
+.info-brand-name {
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 0.625rem;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--text-on-accent);
 }
 
-.admin-login-info > .info-inner > p {
+.info-brand-tagline {
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
   color: rgba(248, 247, 245, 0.85);
-  font-size: 1rem;
-  margin-bottom: 2.25rem;
-}
-
-.role-section {
-  background: rgba(248, 247, 245, 0.10);
-  border: 1px solid rgba(248, 247, 245, 0.12);
-  border-radius: var(--radius-md);
-  padding: 1.125rem 1.25rem;
-  margin-bottom: 0.875rem;
-  backdrop-filter: blur(2px);
-}
-
-.role-section h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  color: var(--text-on-accent);
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.625rem;
-}
-
-.role-icon {
-  width: 26px;
-  height: 26px;
-  background: rgba(248, 247, 245, 0.18);
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-on-accent);
-}
-
-.role-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.role-section li {
-  color: rgba(248, 247, 245, 0.92);
-  font-size: 0.875rem;
-  padding: 0.3rem 0 0.3rem 1.25rem;
-  position: relative;
-}
-
-.role-section li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 5px;
-  background: rgba(248, 247, 245, 0.7);
-  border-radius: 50%;
 }
 
 /* ===== Responsive ===== */

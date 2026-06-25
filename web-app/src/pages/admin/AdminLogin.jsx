@@ -6,9 +6,6 @@ import {
   FiAlertCircle,
   FiEye,
   FiEyeOff,
-  FiSettings,
-  FiCheckCircle,
-  FiEdit3,
   FiClock,
 } from 'react-icons/fi';
 import useAdminAuthStore from '../../stores/adminAuthStore';
@@ -166,44 +163,11 @@ function AdminLogin() {
         </div>
       </div>
 
-      <aside className="admin-login-info" aria-label="Informations sur les rôles">
-        <div className="info-inner">
-          <h2>Portail Professionnel</h2>
-          <p>Gérez efficacement la plateforme éducative ANKA</p>
-
-          <div className="role-section">
-            <h3>
-              <span className="role-icon"><FiSettings size={16} /></span>
-              Administrateurs
-            </h3>
-            <ul>
-              <li>Gestion complète de la plateforme</li>
-              <li>Suivi des utilisateurs et abonnements</li>
-              <li>Statistiques et rapports détaillés</li>
-            </ul>
-          </div>
-
-          <div className="role-section">
-            <h3>
-              <span className="role-icon"><FiCheckCircle size={16} /></span>
-              Validateurs
-            </h3>
-            <ul>
-              <li>Validation des contenus éducatifs</li>
-              <li>Contrôle qualité des ressources</li>
-            </ul>
-          </div>
-
-          <div className="role-section">
-            <h3>
-              <span className="role-icon"><FiEdit3 size={16} /></span>
-              Gestionnaires de contenu
-            </h3>
-            <ul>
-              <li>Création et édition de contenus</li>
-              <li>Organisation des ressources pédagogiques</li>
-            </ul>
-          </div>
+      <aside className="admin-login-info" aria-label="ANKA">
+        <div className="info-brand">
+          <AnkaLogo size={120} className="info-brand-logo" />
+          <span className="info-brand-name">ANKA</span>
+          <span className="info-brand-tagline">Nos cultures. Leur avenir.</span>
         </div>
       </aside>
     </div>
