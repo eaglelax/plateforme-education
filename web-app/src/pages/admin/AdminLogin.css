@@ -114,55 +114,57 @@
   letter-spacing: 0.01em;
 }
 
+/* Conteneur = le cadre/bordure ; icône + champ en flex côte à côte */
 .input-with-icon {
-  position: relative;
-  display: block;
-}
-
-.input-with-icon input {
-  width: 100%;
-  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  color: var(--text);
-  font-size: 0.9375rem;
-  font-family: inherit;
   transition: border-color var(--transition-fast), background-color var(--transition),
               box-shadow var(--transition-fast);
 }
 
-.input-with-icon input:focus {
-  outline: none;
+.input-with-icon:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-with-icon input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.875rem 0;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-family: inherit;
 }
 
 .input-with-icon input::placeholder {
   color: var(--text-muted);
 }
 
+/* Icône à gauche (ordre -1 = avant le champ dans le flux flex) */
 .input-with-icon > svg {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  order: -1;
+  flex-shrink: 0;
   width: 1.05rem;
   height: 1.05rem;
-  flex-shrink: 0;
   color: var(--text-muted);
   pointer-events: none;
 }
 
-.password-input input {
-  padding-right: 3rem;
+.input-with-icon:focus-within > svg {
+  color: var(--accent);
 }
 
+/* Bouton afficher/masquer le mot de passe (reste à droite) */
 .password-toggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   background: none;
   border: none;
   color: var(--text-muted);
